@@ -1,0 +1,211 @@
+.hud {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px calc(8px + env(safe-area-inset-bottom));
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: min(720px, 100%);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(6, 21, 18, 0.55);
+  border: 1px solid rgba(214, 168, 75, 0.22);
+}
+.label {
+  font-size: clamp(0.58rem, 1.6vw, 0.72rem);
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 3.2vw, 1.7rem);
+  color: var(--gold-light);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.winning {
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(214, 168, 75, 0.35);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 4vw, 30px);
+}
+
+.round {
+  width: clamp(40px, 6vh, 52px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: radial-gradient(circle at 35% 30%, var(--jade-light), var(--jade-dark) 70%);
+  color: var(--gold-light);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+.round:hover:not(:disabled) {
+  box-shadow: 0 0 16px rgba(214, 168, 75, 0.45);
+}
+.round:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.spin {
+  position: relative;
+  width: clamp(84px, 15vh, 128px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(37, 138, 112, 0.55), rgba(10, 41, 34, 0.95) 62%),
+    var(--jade-dark);
+  box-shadow:
+    inset 0 4px 14px rgba(0, 0, 0, 0.65),
+    inset 0 -2px 8px rgba(37, 138, 112, 0.35),
+    0 6px 18px rgba(0, 0, 0, 0.5);
+  color: var(--ivory);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.15s ease;
+}
+.spin:hover:not(:disabled) {
+  box-shadow:
+    inset 0 4px 14px rgba(0, 0, 0, 0.65),
+    inset 0 -2px 8px rgba(37, 138, 112, 0.35),
+    0 0 28px rgba(214, 168, 75, 0.5);
+}
+.spin:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.spin:disabled {
+  cursor: not-allowed;
+}
+.spin:disabled:not(.spinning) {
+  opacity: 0.5;
+}
+
+.spinLabel {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 2.6vh, 1.5rem);
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 10px rgba(242, 210, 124, 0.35);
+}
+.freeSpin .spinLabel {
+  font-size: clamp(0.7rem, 1.7vh, 0.95rem);
+  color: var(--gold-light);
+}
+.freeSpin {
+  border-color: var(--gold-light);
+  animation: freeGlow 2.2s ease-in-out infinite;
+}
+
+.ornament {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.spinning .ornament {
+  opacity: 1;
+  animation: rotate 2.4s linear infinite;
+}
+.spinning .spinLabel {
+  opacity: 0.55;
+}
+
+.notice {
+  min-height: 1.3em;
+  text-align: center;
+  font-size: 0.8rem;
+}
+.demo {
+  font-family: var(--font-display);
+  letter-spacing: 0.24em;
+  font-size: 0.68rem;
+  color: var(--gold);
+  opacity: 0.85;
+}
+.warn {
+  color: #ffd9d3;
+}
+.freeBadge {
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+.freeBadge small {
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  font-weight: 400;
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes freeGlow {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 4px 14px rgba(0, 0, 0, 0.65),
+      0 0 10px rgba(242, 210, 124, 0.3);
+  }
+  50% {
+    box-shadow:
+      inset 0 4px 14px rgba(0, 0, 0, 0.65),
+      0 0 26px rgba(242, 210, 124, 0.7);
+  }
+}
+
+/* mobile landscape / very short screens: one compact row */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hud {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+    padding-top: 0;
+  }
+  .stats {
+    width: auto;
+    grid-template-columns: repeat(3, 118px);
+  }
+  .notice {
+    display: none;
+  }
+  .spin {
+    width: 76px;
+  }
+}

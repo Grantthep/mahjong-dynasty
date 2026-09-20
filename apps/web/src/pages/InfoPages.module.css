@@ -1,0 +1,117 @@
+.article {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: clamp(1.2rem, 3vw, 2.2rem);
+  backdrop-filter: blur(8px);
+  line-height: 1.6;
+}
+.article h1 {
+  color: var(--gold-light);
+  font-size: clamp(1.4rem, 3.4vw, 2rem);
+}
+.article h2 {
+  color: var(--gold);
+  font-size: 1.1rem;
+  margin: 1.8rem 0 0.6rem;
+}
+.lead {
+  color: var(--ivory-dark);
+}
+.muted {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+.notice {
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  background: rgba(214, 168, 75, 0.08);
+  color: var(--gold-light);
+  font-size: 0.92rem;
+}
+.list {
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.6rem;
+}
+.actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.6rem 0 1rem;
+}
+.actions a:hover {
+  text-decoration: none;
+}
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  padding: 0.5rem 0.7rem;
+  text-align: right;
+  border-bottom: 1px solid rgba(214, 168, 75, 0.15);
+  white-space: nowrap;
+}
+.table thead th {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.table th:first-child {
+  text-align: left;
+}
+.symbolCell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+  color: var(--ivory);
+}
+
+/* profile */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 1.2rem 0;
+}
+.statCard {
+  background: rgba(6, 21, 18, 0.55);
+  border: 1px solid rgba(214, 168, 75, 0.25);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+}
+.statCard span {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.statCard strong {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--gold-light);
+  font-variant-numeric: tabular-nums;
+}
+.win {
+  color: var(--gold-light);
+}
+.tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  border-radius: 999px;
+  padding: 0 0.5rem;
+}

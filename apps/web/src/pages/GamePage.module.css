@@ -1,0 +1,130 @@
+.root {
+  position: relative;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.top {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px clamp(10px, 2.5vw, 28px) 0;
+}
+.logoSlot {
+  display: flex;
+  justify-content: center;
+}
+.side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sideRight {
+  justify-content: flex-end;
+}
+.iconButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--gold-light);
+  background: rgba(6, 21, 18, 0.65);
+  border: 1px solid rgba(214, 168, 75, 0.45);
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+.iconButton:hover {
+  box-shadow: 0 0 14px rgba(214, 168, 75, 0.4);
+  background: rgba(20, 107, 87, 0.5);
+}
+
+/* The Phaser canvas lives here and is scaled (FIT) to whatever space is left. */
+.stage {
+  position: relative;
+  z-index: 4;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.host {
+  position: absolute;
+  inset: 0;
+}
+.host canvas {
+  display: block;
+}
+.stageMessage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  pointer-events: none;
+}
+
+.toast {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  bottom: 190px;
+  transform: translateX(-50%);
+  max-width: min(92vw, 460px);
+  background: rgba(60, 12, 12, 0.92);
+  border: 1px solid var(--red-light);
+  color: #ffe1db;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Phones in portrait: icons + badge on the first row, the logo centred below. */
+@media (max-width: 560px) {
+  .top {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'left right'
+      'logo logo';
+    row-gap: 2px;
+  }
+  .sideLeft {
+    grid-area: left;
+  }
+  .sideRight {
+    grid-area: right;
+  }
+  .logoSlot {
+    grid-area: logo;
+  }
+  .logoSlot > * {
+    font-size: 0.6rem;
+  }
+}
+
+/* Tight vertical space (laptops, landscape phones): shrink the header. */
+@media (max-height: 760px) {
+  .top :global(div[class*='logo']) {
+    font-size: 0.66rem;
+  }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .top {
+    grid-template-columns: auto 1fr auto;
+    padding-top: 4px;
+  }
+  .logoSlot {
+    display: none;
+  }
+  .toast {
+    bottom: 96px;
+  }
+}
