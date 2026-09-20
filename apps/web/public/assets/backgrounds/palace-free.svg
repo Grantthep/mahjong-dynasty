@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B0806"/><stop offset="0.55" stop-color="#3B140B"/><stop offset="1" stop-color="#6A2A10"/>
+    </linearGradient>
+    <radialGradient id="moonHalo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFD98A" stop-opacity="0.45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lanternGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFB347" stop-opacity="0.85"/><stop offset="0.5" stop-color="#D04A3A" stop-opacity="0.22"/><stop offset="1" stop-color="#A52A2A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1B0C07"/><stop offset="0.45" stop-color="#3D1F12"/><stop offset="1" stop-color="#1B0C07"/>
+    </linearGradient>
+    <linearGradient id="goldGradBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2D27C"/><stop offset="1" stop-color="#9A7420"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B302A"/><stop offset="1" stop-color="#03110E"/>
+    </linearGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5C784" stop-opacity="0"/><stop offset="1" stop-color="#F5C784" stop-opacity="0.16"/>
+    </linearGradient>
+    <radialGradient id="centerDark" cx="0.5" cy="0.52" r="0.55">
+      <stop offset="0" stop-color="#010605" stop-opacity="0.72"/><stop offset="0.65" stop-color="#010605" stop-opacity="0.35"/><stop offset="1" stop-color="#010605" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+    </radialGradient>
+    <pattern id="lattice" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M22 0 L44 22 L22 44 L0 22 Z M22 8 L36 22 L22 36 L8 22 Z" fill="none" stroke="#D6A84B" stroke-opacity="0.42" stroke-width="1.4"/>
+      <circle cx="22" cy="22" r="2" fill="#D6A84B" fill-opacity="0.4"/>
+    </pattern>
+    <pattern id="roofTiles" width="60" height="34" patternUnits="userSpaceOnUse">
+      <path d="M0 0 H60 V22 Q45 34 30 22 Q15 34 0 22 Z" fill="#0A2922" stroke="#D6A84B" stroke-opacity="0.45" stroke-width="1.6"/>
+    </pattern>
+    <radialGradient id="lanternBody1" cx="0.4" cy="0.35" r="0.8">
+        <stop offset="0" stop-color="#FF9C6E"/><stop offset="0.6" stop-color="#D04A3A"/><stop offset="1" stop-color="#6E1414"/></radialGradient><radialGradient id="lanternBody2" cx="0.4" cy="0.35" r="0.8">
+        <stop offset="0" stop-color="#FF9C6E"/><stop offset="0.6" stop-color="#D04A3A"/><stop offset="1" stop-color="#6E1414"/></radialGradient><radialGradient id="lanternBody3" cx="0.4" cy="0.35" r="0.8">
+        <stop offset="0" stop-color="#FF9C6E"/><stop offset="0.6" stop-color="#D04A3A"/><stop offset="1" stop-color="#6E1414"/></radialGradient><radialGradient id="lanternBody4" cx="0.4" cy="0.35" r="0.8">
+        <stop offset="0" stop-color="#FF9C6E"/><stop offset="0.6" stop-color="#D04A3A"/><stop offset="1" stop-color="#6E1414"/></radialGradient><radialGradient id="lanternBody5" cx="0.4" cy="0.35" r="0.8">
+        <stop offset="0" stop-color="#FF9C6E"/><stop offset="0.6" stop-color="#D04A3A"/><stop offset="1" stop-color="#6E1414"/></radialGradient><radialGradient id="lanternBody6" cx="0.4" cy="0.35" r="0.8">
+        <stop offset="0" stop-color="#FF9C6E"/><stop offset="0.6" stop-color="#D04A3A"/><stop offset="1" stop-color="#6E1414"/></radialGradient>
+  </defs>
+
+  <!-- sky, stars, moon -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <circle cx="1049.7" cy="117" r="1.7" fill="#F2D27C" opacity="0.5"/><circle cx="1284.1" cy="120.9" r="0.9" fill="#F2D27C" opacity="0.5"/><circle cx="660.8" cy="246.8" r="1.5" fill="#F2D27C" opacity="0.6"/><circle cx="1166.6" cy="417.5" r="1" fill="#F2D27C" opacity="0.6"/><circle cx="1650.9" cy="84.2" r="1.4" fill="#F2D27C" opacity="0.3"/><circle cx="359.2" cy="93.9" r="0.7" fill="#F2D27C" opacity="0.4"/><circle cx="240.3" cy="82.7" r="1.1" fill="#F2D27C" opacity="0.5"/><circle cx="1086.4" cy="206.6" r="1.7" fill="#F2D27C" opacity="0.4"/><circle cx="239.6" cy="358.8" r="0.7" fill="#F2D27C" opacity="0.6"/><circle cx="1313.4" cy="131.6" r="1.6" fill="#F2D27C" opacity="0.3"/><circle cx="1911.1" cy="42.4" r="1.2" fill="#F2D27C" opacity="0.6"/><circle cx="1488.7" cy="199.1" r="1.5" fill="#F2D27C" opacity="0.6"/><circle cx="1815.4" cy="93.9" r="1.7" fill="#F2D27C" opacity="0.7"/><circle cx="169.2" cy="154" r="1.5" fill="#F2D27C" opacity="0.3"/><circle cx="1791.5" cy="287" r="1.4" fill="#F2D27C" opacity="0.4"/><circle cx="1540.1" cy="362.6" r="1.5" fill="#F2D27C" opacity="0.6"/><circle cx="211" cy="325.8" r="1.6" fill="#F2D27C" opacity="0.5"/><circle cx="1654.6" cy="413.9" r="0.8" fill="#F2D27C" opacity="0.6"/><circle cx="1814.2" cy="288.2" r="1.5" fill="#F2D27C" opacity="0.6"/><circle cx="796.9" cy="342.3" r="0.6" fill="#F2D27C" opacity="0.4"/><circle cx="1302.6" cy="315.3" r="0.8" fill="#F2D27C" opacity="0.5"/><circle cx="1267.8" cy="175.5" r="0.8" fill="#F2D27C" opacity="0.6"/><circle cx="1093.9" cy="19" r="1.4" fill="#F2D27C" opacity="0.7"/><circle cx="525.3" cy="230.4" r="1.7" fill="#F2D27C" opacity="0.6"/><circle cx="24.9" cy="268.2" r="1" fill="#F2D27C" opacity="0.6"/><circle cx="17.4" cy="295.3" r="1.6" fill="#F2D27C" opacity="0.7"/>
+  <circle cx="1400" cy="190" r="240" fill="url(#moonHalo)"/>
+  <circle cx="1400" cy="190" r="52" fill="#FBE2A6" opacity="0.95"/>
+  <circle cx="1386" cy="178" r="52" fill="#3B140B" opacity="0.08"/>
+  <g opacity="0.13" transform="translate(440 150) scale(0.7)"><path d="M28.9 200.7 L40.3 205.7 L51.8 210.6 L63.3 215.2 L74.8 219.6 L86.4 223.6 L98 227.3 L109.6 230.5 L121.4 233.2 L133.2 235.4 L145 237 L156.9 238 L168.9 238.4 L180.9 238.2 L192.9 237.3 L205 235.8 L217.1 233.6 L229.1 230.8 L241.2 227.5 L253.3 223.6 L265.3 219.1 L277.3 214.3 L289.3 209 L301.3 203.5 L313.2 197.6 L325 191.6 L336.8 185.5 L348.6 179.3 L360.2 173.2 L371.9 167.3 L383.4 161.5 L394.8 156 L406.2 150.9 L417.5 146.2 L428.6 142 L439.6 138.4 L450.5 135.3 L461.3 132.9 L471.9 131.1 L482.5 129.9 L492.9 129.5 L503.3 129.7 L513.6 130.7 L523.9 132.3 L534.2 134.6 L544.6 137.7 L555 141.3 L565.6 145.7 L576.2 150.7 L586.9 156.3 L597.8 162.4 L608.7 169.1 L619.7 176.1 L630.9 183.6 L642.1 191.3 L653.4 199.2 L664.9 207.2 L676.4 215.3 L688.1 223.2 L699.8 231 L711.8 238.5 L723.8 245.7 L736 252.4 L748.4 258.6 L761 264.1 L773.8 268.9 L786.7 272.9 L799.9 276 L813.2 278.1 L826.7 279.1 L840.2 279 L853.7 277.9 L867.2 275.6 L880.5 272.2 L893.7 267.9 L906.7 262.6 L919.5 256.5 L932.2 249.6 L944.7 242.1 L957 234 L969.2 225.3 L981.2 216.3 L993.1 207 L1004.7 197.4 L1015.6 186.9 L1026.4 176.5 L1037 166.2 L1047.6 156.2 L1058.2 146.5 L1068.6 137.2 L1079.1 128.4 L1060.9 101.7 L1048.3 108.9 L1035.6 116.8 L1023 125 L1010.5 133.4 L998.1 142 L985.7 150.6 L973.5 159 L962 168 L950.8 176.8 L939.7 185.2 L928.8 193.1 L918 200.3 L907.4 206.9 L896.9 212.7 L886.6 217.8 L876.5 222 L866.6 225.5 L856.8 228.1 L847.2 229.9 L837.6 230.9 L828 231.2 L818.3 230.6 L808.5 229.3 L798.6 227.3 L788.5 224.4 L778.1 220.8 L767.6 216.5 L756.9 211.5 L746 205.9 L734.9 199.7 L723.7 193.1 L712.4 186 L700.9 178.7 L689.4 171.1 L677.7 163.4 L665.9 155.7 L654 148.1 L642.1 140.7 L630 133.6 L617.8 126.8 L605.5 120.4 L593.1 114.6 L580.7 109.3 L568.1 104.8 L555.4 100.9 L542.7 97.8 L529.9 95.6 L517.1 94.2 L504.3 93.7 L491.5 94.1 L478.9 95.3 L466.3 97.3 L453.8 100.1 L441.5 103.6 L429.3 107.7 L417.2 112.5 L405.2 117.7 L393.4 123.4 L381.6 129.5 L369.9 135.8 L358.4 142.4 L346.9 149.1 L335.4 155.9 L324.1 162.6 L312.8 169.3 L301.5 175.8 L290.3 182.1 L279.1 188.1 L268 193.8 L256.9 199.1 L245.8 203.9 L234.8 208.3 L223.7 212.1 L212.7 215.4 L201.7 218.1 L190.6 220.3 L179.6 221.9 L168.5 222.8 L157.3 223.2 L146.1 223 L134.8 222.3 L123.5 221 L112.1 219.1 L100.7 216.8 L89.2 214 L77.7 210.8 L66.1 207.3 L54.5 203.5 L42.8 199.4 L31.1 195.1 Z" fill="#F2D27C"/>
+    <g transform="translate(1070 115.1) rotate(-34.3)">
+      <path d="M-4 -30 C-30 -54 -70 -46 -110 -70 C-80 -26 -50 -14 -4 8 Z" fill="#146B57" stroke="#F2D27C" stroke-width="2"/>
+      <path d="M8 -26 C-6 -64 -34 -92 -66 -100 C-38 -78 -22 -52 -4 -22 Z" fill="#F2D27C" stroke="#7A5A16" stroke-width="1.4"/>
+      <path d="M24 -30 C20 -70 4 -92 -14 -104 C4 -82 8 -58 12 -28 Z" fill="#F2D27C" stroke="#7A5A16" stroke-width="1.4"/>
+      <path d="M-6 -26 C20 -46 64 -46 96 -30 L146 -22 C160 -18 160 4 146 8 L100 14 C74 40 24 38 -6 22 Z" fill="#F2D27C" stroke="#7A5A16" stroke-width="2"/>
+      <path d="M64 20 C92 40 128 34 144 12 L140 26 C120 48 82 50 58 32 Z" fill="#B98A2E" stroke="#7A5A16" stroke-width="1.4"/>
+      <path d="M100 14 l5 11 5 -11 M118 12 l4 9 4 -9" fill="#FFF7E0" stroke="none"/>
+      <circle cx="70" cy="-14" r="9" fill="#FFF3B5"/><circle cx="72" cy="-14" r="4" fill="#B01818"/>
+      <circle cx="140" cy="-10" r="3" fill="#5A3A08"/>
+      <path d="M144 -2 C190 30 230 4 270 46" stroke="#F2D27C" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M140 -18 C182 -52 226 -26 262 -72" stroke="#F2D27C" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+    </g></g>
+
+  <!-- distant misty mountains -->
+  <path d="M0 1080 L0 720 L0 643.3 L120 640.5 L240 628.8 L360 631.5 L480 592.4 L600 639.3 L720 708 L840 640.4 L960 628.8 L1080 652.5 L1200 648 L1320 593.5 L1440 657 L1560 619.5 L1680 617.8 L1800 695.9 L1920 693.2 L1920 1080 Z" fill="#3A1A10" opacity="0.7"/>
+  <path d="M0 1080 L0 800 L0 787 L120 790.4 L240 711.5 L360 757.2 L480 754.6 L600 770 L720 728.3 L840 666.5 L960 684.4 L1080 798.7 L1200 700.8 L1320 770.8 L1440 787.9 L1560 662 L1680 682.5 L1800 733.9 L1920 696.2 L1920 1080 Z" fill="#2E140C" opacity="0.85"/>
+  <rect x="0" y="600" width="1920" height="300" fill="url(#mist)"/>
+  <path d="M0 1080 L0 880 L0 823.2 L120 770.3 L240 877.1 L360 798.7 L480 858.2 L600 815.3 L720 860.6 L840 774.6 L960 809.7 L1080 825.4 L1200 814 L1320 792.6 L1440 855.5 L1560 798.1 L1680 778.1 L1800 782.9 L1920 774.2 L1920 1080 Z" fill="#22100A" opacity="1"/>
+
+  <!-- floor -->
+  <rect x="0" y="930" width="1920" height="150" fill="url(#floor)"/>
+  <g stroke="#D6A84B" stroke-opacity="0.16" stroke-width="1.4">
+    <line x1="720" y1="930" x2="-360" y2="1080"/><line x1="760" y1="930" x2="-140" y2="1080"/><line x1="800" y1="930" x2="80" y2="1080"/><line x1="840" y1="930" x2="300" y2="1080"/><line x1="880" y1="930" x2="520" y2="1080"/><line x1="920" y1="930" x2="740" y2="1080"/><line x1="960" y1="930" x2="960" y2="1080"/><line x1="1000" y1="930" x2="1180" y2="1080"/><line x1="1040" y1="930" x2="1400" y2="1080"/><line x1="1080" y1="930" x2="1620" y2="1080"/><line x1="1120" y1="930" x2="1840" y2="1080"/><line x1="1160" y1="930" x2="2060" y2="1080"/><line x1="1200" y1="930" x2="2280" y2="1080"/>
+    <line x1="0" y1="985" x2="1920" y2="985"/><line x1="0" y1="1040" x2="1920" y2="1040"/>
+  </g>
+  <rect x="0" y="925" width="1920" height="10" fill="#D6A84B" opacity="0.32"/>
+
+  <!-- centre stays dark and uncluttered for the Mahjong grid -->
+  <rect width="1920" height="1080" fill="url(#centerDark)"/>
+
+  <!-- left & right palace architecture -->
+  
+  <g transform="">
+    <rect x="0" y="0" width="360" height="1080" fill="#061A16" opacity="0.92"/>
+    <rect x="70" y="120" width="270" height="820" fill="url(#lattice)" opacity="0.95"/>
+    <rect x="70" y="120" width="270" height="820" fill="none" stroke="#D6A84B" stroke-opacity="0.35" stroke-width="2"/>
+    <rect x="0" y="0" width="120" height="1080" fill="url(#wood)"/>
+    <rect x="0" y="0" width="120" height="1080" fill="none" stroke="#0B0503" stroke-width="3"/>
+    <g fill="url(#goldGradBg)" opacity="0.85">
+      <rect x="-4" y="170" width="128" height="16" rx="3"/><rect x="-4" y="860" width="128" height="16" rx="3"/>
+      <rect x="10" y="186" width="100" height="6" opacity="0.6"/>
+    </g>
+    <g stroke="#D6A84B" stroke-opacity="0.28" stroke-width="2" fill="none">
+      <path d="M30 240 Q60 280 30 330 Q0 380 30 430 Q60 480 30 530 Q0 580 30 630 Q60 680 30 730"/>
+      <path d="M90 240 Q60 280 90 330 Q120 380 90 430 Q60 480 90 530 Q120 580 90 630 Q60 680 90 730"/>
+    </g>
+    <rect x="0" y="0" width="360" height="1080" fill="url(#vignette)" opacity="0.25"/>
+  </g>
+  <g transform="translate(1920 0) scale(-1 1)">
+    <rect x="0" y="0" width="360" height="1080" fill="#061A16" opacity="0.92"/>
+    <rect x="70" y="120" width="270" height="820" fill="url(#lattice)" opacity="0.95"/>
+    <rect x="70" y="120" width="270" height="820" fill="none" stroke="#D6A84B" stroke-opacity="0.35" stroke-width="2"/>
+    <rect x="0" y="0" width="120" height="1080" fill="url(#wood)"/>
+    <rect x="0" y="0" width="120" height="1080" fill="none" stroke="#0B0503" stroke-width="3"/>
+    <g fill="url(#goldGradBg)" opacity="0.85">
+      <rect x="-4" y="170" width="128" height="16" rx="3"/><rect x="-4" y="860" width="128" height="16" rx="3"/>
+      <rect x="10" y="186" width="100" height="6" opacity="0.6"/>
+    </g>
+    <g stroke="#D6A84B" stroke-opacity="0.28" stroke-width="2" fill="none">
+      <path d="M30 240 Q60 280 30 330 Q0 380 30 430 Q60 480 30 530 Q0 580 30 630 Q60 680 30 730"/>
+      <path d="M90 240 Q60 280 90 330 Q120 380 90 430 Q60 480 90 530 Q120 580 90 630 Q60 680 90 730"/>
+    </g>
+    <rect x="0" y="0" width="360" height="1080" fill="url(#vignette)" opacity="0.25"/>
+  </g>
+
+  <!-- roof eaves -->
+  <rect x="0" y="0" width="1920" height="86" fill="#04140F"/>
+  <rect x="0" y="0" width="1920" height="34" fill="url(#roofTiles)"/>
+  <rect x="0" y="34" width="1920" height="52" fill="url(#wood)" opacity="0.95"/>
+  <rect x="0" y="80" width="1920" height="6" fill="url(#goldGradBg)" opacity="0.8"/>
+  <rect x="0" y="36" width="1920" height="3" fill="#D6A84B" opacity="0.5"/>
+
+  <!-- lanterns (edges only) -->
+  
+    <g>
+      <circle cx="250" cy="152" r="210" fill="url(#lanternGlow)" opacity="0.95"/>
+      <line x1="250" y1="0" x2="250" y2="92" stroke="#2A1A10" stroke-width="3"/>
+      <g transform="translate(250 92) scale(1)">
+        <rect x="-16" y="-4" width="32" height="12" rx="3" fill="url(#goldGradBg)"/>
+        <ellipse cx="0" cy="62" rx="40" ry="54" fill="url(#lanternBody1)" stroke="#5A1414" stroke-width="2"/>
+        <path d="M0 8 V116 M-20 12 Q-30 62 -20 112 M20 12 Q30 62 20 112" stroke="#F2A88A" stroke-opacity="0.35" stroke-width="2" fill="none"/>
+        <ellipse cx="-12" cy="40" rx="10" ry="22" fill="#fff" opacity="0.22"/>
+        <rect x="-18" y="112" width="36" height="10" rx="3" fill="url(#goldGradBg)"/>
+        <path d="M0 122 V150" stroke="#D6A84B" stroke-width="3"/>
+        <path d="M-6 150 H6 L4 178 M0 150 V180 M-6 150 L-4 176" stroke="#A52A2A" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
+    <g>
+      <circle cx="150" cy="135.2" r="151.2" fill="url(#lanternGlow)" opacity="0.95"/>
+      <line x1="150" y1="0" x2="150" y2="92" stroke="#2A1A10" stroke-width="3"/>
+      <g transform="translate(150 92) scale(0.72)">
+        <rect x="-16" y="-4" width="32" height="12" rx="3" fill="url(#goldGradBg)"/>
+        <ellipse cx="0" cy="62" rx="40" ry="54" fill="url(#lanternBody2)" stroke="#5A1414" stroke-width="2"/>
+        <path d="M0 8 V116 M-20 12 Q-30 62 -20 112 M20 12 Q30 62 20 112" stroke="#F2A88A" stroke-opacity="0.35" stroke-width="2" fill="none"/>
+        <ellipse cx="-12" cy="40" rx="10" ry="22" fill="#fff" opacity="0.22"/>
+        <rect x="-18" y="112" width="36" height="10" rx="3" fill="url(#goldGradBg)"/>
+        <path d="M0 122 V150" stroke="#D6A84B" stroke-width="3"/>
+        <path d="M-6 150 H6 L4 178 M0 150 V180 M-6 150 L-4 176" stroke="#A52A2A" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
+    <g>
+      <circle cx="420" cy="140" r="168" fill="url(#lanternGlow)" opacity="0.95"/>
+      <line x1="420" y1="0" x2="420" y2="92" stroke="#2A1A10" stroke-width="3"/>
+      <g transform="translate(420 92) scale(0.8)">
+        <rect x="-16" y="-4" width="32" height="12" rx="3" fill="url(#goldGradBg)"/>
+        <ellipse cx="0" cy="62" rx="40" ry="54" fill="url(#lanternBody3)" stroke="#5A1414" stroke-width="2"/>
+        <path d="M0 8 V116 M-20 12 Q-30 62 -20 112 M20 12 Q30 62 20 112" stroke="#F2A88A" stroke-opacity="0.35" stroke-width="2" fill="none"/>
+        <ellipse cx="-12" cy="40" rx="10" ry="22" fill="#fff" opacity="0.22"/>
+        <rect x="-18" y="112" width="36" height="10" rx="3" fill="url(#goldGradBg)"/>
+        <path d="M0 122 V150" stroke="#D6A84B" stroke-width="3"/>
+        <path d="M-6 150 H6 L4 178 M0 150 V180 M-6 150 L-4 176" stroke="#A52A2A" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
+  
+    <g>
+      <circle cx="1670" cy="152" r="210" fill="url(#lanternGlow)" opacity="0.95"/>
+      <line x1="1670" y1="0" x2="1670" y2="92" stroke="#2A1A10" stroke-width="3"/>
+      <g transform="translate(1670 92) scale(1)">
+        <rect x="-16" y="-4" width="32" height="12" rx="3" fill="url(#goldGradBg)"/>
+        <ellipse cx="0" cy="62" rx="40" ry="54" fill="url(#lanternBody4)" stroke="#5A1414" stroke-width="2"/>
+        <path d="M0 8 V116 M-20 12 Q-30 62 -20 112 M20 12 Q30 62 20 112" stroke="#F2A88A" stroke-opacity="0.35" stroke-width="2" fill="none"/>
+        <ellipse cx="-12" cy="40" rx="10" ry="22" fill="#fff" opacity="0.22"/>
+        <rect x="-18" y="112" width="36" height="10" rx="3" fill="url(#goldGradBg)"/>
+        <path d="M0 122 V150" stroke="#D6A84B" stroke-width="3"/>
+        <path d="M-6 150 H6 L4 178 M0 150 V180 M-6 150 L-4 176" stroke="#A52A2A" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
+    <g>
+      <circle cx="1770" cy="135.2" r="151.2" fill="url(#lanternGlow)" opacity="0.95"/>
+      <line x1="1770" y1="0" x2="1770" y2="92" stroke="#2A1A10" stroke-width="3"/>
+      <g transform="translate(1770 92) scale(0.72)">
+        <rect x="-16" y="-4" width="32" height="12" rx="3" fill="url(#goldGradBg)"/>
+        <ellipse cx="0" cy="62" rx="40" ry="54" fill="url(#lanternBody5)" stroke="#5A1414" stroke-width="2"/>
+        <path d="M0 8 V116 M-20 12 Q-30 62 -20 112 M20 12 Q30 62 20 112" stroke="#F2A88A" stroke-opacity="0.35" stroke-width="2" fill="none"/>
+        <ellipse cx="-12" cy="40" rx="10" ry="22" fill="#fff" opacity="0.22"/>
+        <rect x="-18" y="112" width="36" height="10" rx="3" fill="url(#goldGradBg)"/>
+        <path d="M0 122 V150" stroke="#D6A84B" stroke-width="3"/>
+        <path d="M-6 150 H6 L4 178 M0 150 V180 M-6 150 L-4 176" stroke="#A52A2A" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
+    <g>
+      <circle cx="1500" cy="140" r="168" fill="url(#lanternGlow)" opacity="0.95"/>
+      <line x1="1500" y1="0" x2="1500" y2="92" stroke="#2A1A10" stroke-width="3"/>
+      <g transform="translate(1500 92) scale(0.8)">
+        <rect x="-16" y="-4" width="32" height="12" rx="3" fill="url(#goldGradBg)"/>
+        <ellipse cx="0" cy="62" rx="40" ry="54" fill="url(#lanternBody6)" stroke="#5A1414" stroke-width="2"/>
+        <path d="M0 8 V116 M-20 12 Q-30 62 -20 112 M20 12 Q30 62 20 112" stroke="#F2A88A" stroke-opacity="0.35" stroke-width="2" fill="none"/>
+        <ellipse cx="-12" cy="40" rx="10" ry="22" fill="#fff" opacity="0.22"/>
+        <rect x="-18" y="112" width="36" height="10" rx="3" fill="url(#goldGradBg)"/>
+        <path d="M0 122 V150" stroke="#D6A84B" stroke-width="3"/>
+        <path d="M-6 150 H6 L4 178 M0 150 V180 M-6 150 L-4 176" stroke="#A52A2A" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
+
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

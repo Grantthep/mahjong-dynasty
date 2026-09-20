@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 170" width="640" height="170">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBE7A6"/><stop offset="0.5" stop-color="#D6A84B"/><stop offset="1" stop-color="#8F6A1C"/></linearGradient>
+    <filter id="glow" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#258A70" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <text x="320" y="82" font-size="64" text-anchor="middle" font-family="'Cinzel','Trajan Pro',Georgia,'Times New Roman',serif" font-weight="700" letter-spacing="6" fill="url(#g)" filter="url(#glow)">MAHJONG DYNASTY</text>
+  <g stroke="#D6A84B" stroke-opacity="0.8" stroke-width="1.6" fill="none"><path d="M40 118 H250"/><path d="M390 118 H600"/></g>
+  <path d="M320 104 l9 14 -9 14 -9 -14z" fill="url(#g)"/>
+  <text x="320" y="146" font-size="24" text-anchor="middle" font-family="'Cinzel','Trajan Pro',Georgia,'Times New Roman',serif" font-weight="600" letter-spacing="11" fill="#F4EBD7" opacity="0.92">DRAGON FORTUNE</text>
+</svg>

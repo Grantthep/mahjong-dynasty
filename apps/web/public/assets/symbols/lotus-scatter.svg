@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 132" width="120" height="132">
+  <defs>
+  <linearGradient id="face" x1="0.1" y1="0" x2="0.7" y2="1">
+    <stop offset="0" stop-color="#FFFAEC"/><stop offset="0.55" stop-color="#F4EBD7"/><stop offset="1" stop-color="#DCCBA6"/>
+  </linearGradient>
+  <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#258A70"/><stop offset="0.5" stop-color="#146B57"/><stop offset="1" stop-color="#0A3128"/>
+  </linearGradient>
+  <linearGradient id="jadeGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#2FAA8A"/><stop offset="1" stop-color="#0E5A47"/>
+  </linearGradient>
+  <linearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#D04A3A"/><stop offset="1" stop-color="#7A1818"/>
+  </linearGradient>
+  <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#F2D27C"/><stop offset="0.5" stop-color="#D6A84B"/><stop offset="1" stop-color="#9A7420"/>
+  </linearGradient>
+  <radialGradient id="sheen" cx="0.28" cy="0.18" r="0.7">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.65"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="drop" x="-20%" y="-15%" width="140%" height="150%">
+    <feDropShadow dx="0" dy="3.5" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
+  </filter>
+  <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>
+
+    <linearGradient id="petalOuter" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#8A1C1C"/><stop offset="1" stop-color="#E0604C"/></linearGradient>
+    <linearGradient id="petalInner" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#B02A2A"/><stop offset="1" stop-color="#FF9C82"/></linearGradient>
+    <radialGradient id="lotusGlow" cx="0.5" cy="0.55" r="0.55"><stop offset="0" stop-color="#FF8A70" stop-opacity="0.7"/><stop offset="1" stop-color="#FF8A70" stop-opacity="0"/></radialGradient>
+    <radialGradient id="centerGold" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#FFF3B5"/><stop offset="1" stop-color="#D6A84B"/></radialGradient></defs>
+  <g filter="url(#drop)">
+    <rect x="6" y="12" width="108" height="114" rx="17" fill="url(#edge)"/>
+    <rect x="6" y="6" width="108" height="112" rx="17" fill="url(#face)" stroke="#BFAE86" stroke-width="1.2"/>
+  </g>
+  <rect x="10.5" y="10.5" width="99" height="103" rx="13" fill="none" stroke="#fff" stroke-opacity="0.55" stroke-width="1.2"/>
+  <rect x="12" y="12" width="96" height="100" rx="11" fill="none" stroke="#C9B88F" stroke-opacity="0.45" stroke-width="0.8"/>
+  <rect x="6" y="6" width="108" height="112" rx="17" fill="url(#sheen)"/>
+  
+  <rect x="15" y="15" width="90" height="90" rx="13" fill="#0A2922" stroke="url(#goldGrad)" stroke-width="1.6"/>
+  <rect x="15" y="15" width="90" height="90" rx="13" fill="url(#jadeGrad)" opacity="0.28"/>
+  <ellipse cx="60" cy="58" rx="42" ry="38" fill="url(#lotusGlow)"/>
+  <ellipse cx="38" cy="86" rx="20" ry="6" fill="#1B8A6C" opacity="0.9" transform="rotate(-8 38 86)"/>
+  <ellipse cx="82" cy="86" rx="20" ry="6" fill="#1B8A6C" opacity="0.9" transform="rotate(8 82 86)"/>
+  <ellipse cx="60" cy="46" rx="9.5" ry="24" fill="url(#petalOuter)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(-76 60 66)"/><ellipse cx="60" cy="46" rx="9.5" ry="24" fill="url(#petalOuter)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(-38 60 66)"/><ellipse cx="60" cy="46" rx="9.5" ry="24" fill="url(#petalOuter)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(0 60 66)"/><ellipse cx="60" cy="46" rx="9.5" ry="24" fill="url(#petalOuter)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(38 60 66)"/><ellipse cx="60" cy="46" rx="9.5" ry="24" fill="url(#petalOuter)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(76 60 66)"/><ellipse cx="60" cy="50" rx="8" ry="19" fill="url(#petalInner)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(-57 60 66)"/><ellipse cx="60" cy="50" rx="8" ry="19" fill="url(#petalInner)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(-19 60 66)"/><ellipse cx="60" cy="50" rx="8" ry="19" fill="url(#petalInner)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(19 60 66)"/><ellipse cx="60" cy="50" rx="8" ry="19" fill="url(#petalInner)" stroke="#5A1010" stroke-width="0.7" stroke-opacity="0.6" transform="rotate(57 60 66)"/>
+  <circle cx="60" cy="60" r="10" fill="url(#centerGold)" stroke="#9A7420" stroke-width="1"/>
+  <circle cx="72" cy="60" r="1.1" fill="#F2D27C"/><circle cx="69.7" cy="65.3" r="1.1" fill="#F2D27C"/><circle cx="63.7" cy="68.6" r="1.1" fill="#F2D27C"/><circle cx="56.3" cy="68.6" r="1.1" fill="#F2D27C"/><circle cx="50.3" cy="65.3" r="1.1" fill="#F2D27C"/><circle cx="48" cy="60" r="1.1" fill="#F2D27C"/><circle cx="50.3" cy="54.7" r="1.1" fill="#F2D27C"/><circle cx="56.3" cy="51.4" r="1.1" fill="#F2D27C"/><circle cx="63.7" cy="51.4" r="1.1" fill="#F2D27C"/><circle cx="69.7" cy="54.7" r="1.1" fill="#F2D27C"/>
+  <circle cx="60" cy="60" r="4" fill="#FFF8D2" opacity="0.9"/>
+  <circle cx="22" cy="30" r="1.4" fill="#F2D27C"/><circle cx="98" cy="28" r="1.2" fill="#F2D27C"/><circle cx="96" cy="70" r="1.5" fill="#F2D27C"/><circle cx="24" cy="66" r="1.1" fill="#F2D27C"/>
+  <text x="60" y="101" font-size="8.6" text-anchor="middle" font-family="'Cinzel','Trajan Pro',Georgia,'Times New Roman',serif" font-weight="700" letter-spacing="2" fill="#F2D27C">SCATTER</text>
+</svg>
