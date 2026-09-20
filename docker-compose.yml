@@ -1,0 +1,23 @@
+# Local PostgreSQL for development. Free, no cloud account needed.
+#   docker compose up -d
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: mahjong-dynasty-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mahjong
+      POSTGRES_PASSWORD: mahjong
+      POSTGRES_DB: mahjong_dynasty
+    ports:
+      - '5432:5432'
+    volumes:
+      - mahjong_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mahjong -d mahjong_dynasty']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mahjong_pgdata:

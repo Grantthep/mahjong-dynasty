@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+package-lock.json
+.pgdata
+apps/web/public/assets/**/*.svg
+apps/api/prisma/migrations

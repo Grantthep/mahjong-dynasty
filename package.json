@@ -1,0 +1,47 @@
+{
+  "name": "mahjong-dynasty",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mahjong Dynasty: Dragon Fortune - a full-stack browser demo game (virtual demo credits only).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,cyan \"npm run dev -w @mahjong/api\" \"npm run dev -w @mahjong/web\"",
+    "build": "npm run build -w @mahjong/api && npm run build -w @mahjong/web",
+    "start": "npm run start -w @mahjong/api",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:embedded": "node scripts/embedded-postgres.mjs",
+    "db:generate": "npm run db:generate -w @mahjong/api",
+    "db:migrate": "npm run db:migrate -w @mahjong/api",
+    "db:deploy": "npm run db:deploy -w @mahjong/api",
+    "db:seed": "npm run db:seed -w @mahjong/api",
+    "simulate": "npm run simulate -w @mahjong/api --",
+    "assets:generate": "node scripts/generate-assets.mjs",
+    "postinstall": "npm run db:generate -w @mahjong/api"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "concurrently": "^9.2.4",
+    "embedded-postgres": "17.10.0-beta.17",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0"
+  }
+}
