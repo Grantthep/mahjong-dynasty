@@ -1,0 +1,128 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at center, rgba(6, 21, 18, 0.72), rgba(0, 0, 0, 0.86));
+  cursor: pointer;
+  animation: fadeIn 0.35s ease;
+}
+
+.content {
+  text-align: center;
+  padding: 0 20px;
+  animation: pop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.title {
+  font-size: clamp(2.6rem, 10vw, 6rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  background: linear-gradient(
+    180deg,
+    #fff3c4 0%,
+    var(--gold-light) 40%,
+    var(--gold) 70%,
+    #8f6a1c 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 22px rgba(214, 168, 75, 0.7)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.7));
+}
+.mega .title {
+  filter: drop-shadow(0 0 30px rgba(242, 210, 124, 0.9)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.7));
+}
+.epic .title {
+  background: linear-gradient(180deg, #fff 0%, #ffe9a6 35%, #f4b54a 70%, #d04a3a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 36px rgba(242, 210, 124, 1)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.7));
+}
+.free .title {
+  font-size: clamp(2rem, 7vw, 4.2rem);
+}
+
+.amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 9vw, 5rem);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px rgba(242, 210, 124, 0.6);
+  margin-top: 0.2em;
+}
+.unit {
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  font-size: clamp(0.7rem, 2vw, 1rem);
+  font-family: var(--font-display);
+}
+.subtitle {
+  margin-top: 0.8rem;
+  color: var(--ivory);
+  letter-spacing: 0.12em;
+}
+.hint {
+  margin-top: 1.6rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sparks {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sparks span {
+  position: absolute;
+  bottom: -12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  box-shadow: 0 0 12px var(--gold-light);
+  animation: rise 4.5s linear infinite;
+  opacity: 0;
+}
+.epic .sparks span,
+.mega .sparks span {
+  width: 8px;
+  height: 8px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-105vh);
+    opacity: 0;
+  }
+}
