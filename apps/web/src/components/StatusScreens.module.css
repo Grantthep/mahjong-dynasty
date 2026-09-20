@@ -1,0 +1,44 @@
+.shell {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.card {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: 2rem 2.4rem;
+  backdrop-filter: blur(6px);
+  max-width: 420px;
+}
+.loading p,
+.error p {
+  color: var(--text-muted);
+  margin: 0.8rem 0 0;
+}
+.error h2 {
+  color: var(--gold-light);
+  font-size: 1.3rem;
+}
+.error button {
+  margin-top: 1.2rem;
+}
+.spinner {
+  display: inline-block;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid rgba(214, 168, 75, 0.25);
+  border-top-color: var(--gold-light);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

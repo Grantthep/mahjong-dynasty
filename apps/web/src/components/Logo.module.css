@@ -1,0 +1,111 @@
+.logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  font-family: var(--font-display);
+  text-align: center;
+  user-select: none;
+}
+
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+.ornament img {
+  width: 1.7em;
+  height: 1.7em;
+  filter: drop-shadow(0 0 6px rgba(214, 168, 75, 0.6));
+}
+.ornament i {
+  display: block;
+  width: 3.2em;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.ornament i:last-child {
+  transform: scaleX(-1);
+}
+
+.title {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.05;
+  background: linear-gradient(180deg, #fbe7a6 0%, var(--gold) 55%, #8f6a1c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(37, 138, 112, 0.55)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+.sub {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  color: var(--ivory);
+  opacity: 0.92;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  margin-top: 0.35em;
+}
+.sub b {
+  display: block;
+  width: 3em;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.sub b:last-child {
+  transform: scaleX(-1);
+}
+
+.sm {
+  font-size: 0.62rem;
+}
+.sm .title {
+  font-size: 1.9em;
+}
+.sm .sub {
+  font-size: 0.85em;
+}
+.sm .ornament {
+  display: none;
+}
+
+.md {
+  font-size: 0.8rem;
+}
+.md .title {
+  font-size: 2.3em;
+}
+.md .sub {
+  font-size: 0.95em;
+}
+
+.lg {
+  font-size: clamp(0.7rem, 1.7vw, 1.15rem);
+}
+.lg .title {
+  font-size: clamp(2.1rem, 6.6vw, 5.4rem);
+}
+.lg .sub {
+  font-size: clamp(0.85rem, 2vw, 1.5rem);
+  margin-top: 0.7em;
+}
+.lg .ornament {
+  margin-bottom: 0.9em;
+  font-size: 1.2em;
+}
+
+/* keep the title on one line on very narrow screens */
+.title {
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .sub {
+    letter-spacing: 0.3em;
+  }
+  .sm {
+    font-size: 0.5rem;
+  }
+}

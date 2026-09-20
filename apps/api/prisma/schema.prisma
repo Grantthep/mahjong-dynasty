@@ -1,0 +1,68 @@
+// Mahjong Dynasty: Dragon Fortune - database schema.
+// All money fields are integer DEMO CREDITS. No real-money data is stored.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  demoBalance  Int      @default(10000)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  session GameSession?
+  spins   Spin[]
+}
+
+/// One persistent game session per user: Dragon meter + Free Spin state live here
+/// so a browser refresh never loses them.
+model GameSession {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  dragonMeter        Int      @default(0)
+  freeSpinsRemaining Int      @default(0)
+  freeSpinsTotal     Int      @default(0)
+  /// Bet locked when Free Spins were awarded (free spins always use it).
+  freeSpinBet        Int      @default(0)
+  /// Demo credits won so far in the current Free Spin round.
+  freeSpinsWin       Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spins Spin[]
+}
+
+model Spin {
+  id                     String   @id @default(uuid())
+  userId                 String
+  sessionId              String
+  /// Client idempotency key - a repeated key returns the stored result and never charges twice.
+  requestId              String
+  bet                    Int
+  isFreeSpin             Boolean  @default(false)
+  totalWin               Int
+  balanceBefore          Int
+  balanceAfter           Int
+  freeSpinsAwarded       Int      @default(0)
+  dragonFortuneTriggers  Int      @default(0)
+  cascadeCount           Int      @default(0)
+  resultJson             Json
+  createdAt              DateTime @default(now())
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, requestId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([sessionId])
+}
