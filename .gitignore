@@ -22,3 +22,8 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Playwright output
+e2e/test-results/
+e2e/playwright-report/
+e2e/blob-report/

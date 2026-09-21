@@ -32,6 +32,8 @@ export interface AppDeps {
 export function createApp({ prisma, env, rng, rateLimit }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
+  // Behind nginx / a load balancer the client address comes from X-Forwarded-For (rate limiting).
+  if (env.TRUST_PROXY > 0) app.set('trust proxy', env.TRUST_PROXY);
 
   const tokens = new TokenService(env.JWT_SECRET);
   const authService = new AuthService(prisma, env.BCRYPT_ROUNDS);

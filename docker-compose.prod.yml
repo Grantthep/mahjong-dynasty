@@ -1,0 +1,68 @@
+# Production-style stack: PostgreSQL + one-shot migrations + API + nginx web app.
+#
+#   POSTGRES_PASSWORD=... JWT_SECRET=... docker compose -f docker-compose.prod.yml up --build -d
+#
+# Then open http://localhost:8080 (change the port with WEB_PORT). Behind real HTTPS, set
+# WEB_ORIGIN to your public https:// address. DEMO CREDITS only: this is not a wallet.
+name: mahjong-dynasty
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mahjong
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD (letters and digits only)}
+      POSTGRES_DB: mahjong_dynasty
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mahjong -d mahjong_dynasty']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    # No published port: only the other containers can reach the database.
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://mahjong:${POSTGRES_PASSWORD}@db:5432/mahjong_dynasty?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: .
+      target: api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_PORT: '4000'
+      DATABASE_URL: postgresql://mahjong:${POSTGRES_PASSWORD}@db:5432/mahjong_dynasty?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (a random string of at least 32 characters)}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      # nginx is one proxy hop in front of the API, so rate limits see the real client address.
+      TRUST_PROXY: '1'
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata_prod:

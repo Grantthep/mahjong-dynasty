@@ -1,0 +1,17 @@
+# Keep the build context small and never bake secrets or local data into an image.
+.git
+.github
+node_modules
+**/node_modules
+**/dist
+**/coverage
+.env
+.env.*
+!.env.example
+.pgdata
+docs
+e2e/test-results
+e2e/playwright-report
+*.log
+Dockerfile
+docker-compose*.yml

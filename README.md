@@ -79,7 +79,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 | Frontend  | React 19, TypeScript, Vite 7, **Phaser 3**, React Router, TanStack Query, Zustand, Zod, CSS Modules      |
 | Backend   | Node.js, TypeScript, Express 5, Prisma 6, PostgreSQL, Zod, bcrypt, JWT, Helmet, CORS, express-rate-limit |
 | Testing   | Vitest, React Testing Library, Supertest                                                                 |
-| Dev / Ops | Docker Compose (PostgreSQL), ESLint 9, Prettier, GitHub Actions                                          |
+| Dev / Ops | Docker (Dockerfile + Compose), Playwright, ESLint 9, Prettier, GitHub Actions                            |
 | Fonts     | Cinzel (SIL OFL, bundled via `@fontsource`, not a paid font)                                             |
 
 ## Architecture
@@ -339,6 +339,27 @@ npm run typecheck
 - **Frontend tests** (React Testing Library) – login, register, HUD, bet controls, loading & error
   states, protected route, audio manager with missing files.
 
+### End-to-end tests (Playwright)
+
+```bat
+npm run test:e2e
+```
+
+Real-browser tests drive the running site: registering and spinning (the balance on screen must match
+the server), Skip / Turbo, auto spin with pause, resume and stop, the per-bet paytable, the English /
+Chinese switch, the leaderboard, and the admin dashboard (players are turned away, the administrator
+gets in). They start `npm run dev` for you, or reuse it when it is already running.
+
+- Needs PostgreSQL with migrations applied and the demo administrator seeded
+  (`npm run db:seed -- --admin-only`).
+- First time only: `npx playwright install chromium`. To use a browser you already have instead of
+  downloading one: `set PW_CHANNEL=msedge` (or `chrome`) before running.
+- To test a deployment (for example the Docker stack below):
+  `set E2E_BASE_URL=http://localhost:8080`.
+- Every test registers its own player, and the API rate-limits sign-ups per address (30 per 15
+  minutes), so avoid running the suite many times in a row against one server.
+- After a failure: `npm run report -w @mahjong/e2e` opens the report with screenshots and traces.
+
 Integration tests use an isolated schema (`mahjong_test`) in your dev database. If PostgreSQL is not
 running they print a loud warning and are **skipped** – start the database and run again.
 
@@ -364,6 +385,30 @@ npm start             :: run the built API (needs env vars and a migrated databa
 For production: run `npm run db:deploy`, serve `apps/web/dist` from any static host (set
 `VITE_API_URL` at build time and `WEB_ORIGIN` on the API).
 
+## Docker deployment
+
+The repository has production images (one [`Dockerfile`](Dockerfile), targets `api`, `web`,
+`migrate`) and a ready-made stack: PostgreSQL, a one-shot migration, the API, and nginx serving the
+web app and forwarding `/api` to the API on the same origin (so the login cookie just works).
+
+```bat
+set POSTGRES_PASSWORD=choose-letters-and-digits
+set JWT_SECRET=paste-a-random-string-of-at-least-32-characters
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Then open http://localhost:8080 (`WEB_PORT` changes the port). Stop with
+`docker compose -f docker-compose.prod.yml down` (add `-v` to erase the database).
+
+- The database has no published port; only the other containers can reach it.
+- Production mode uses `Secure` cookies: browsers accept them on `localhost`, but a real site must
+  be served over HTTPS (put a TLS proxy or load balancer in front) and `WEB_ORIGIN` set to its public
+  `https://` address. `TRUST_PROXY=1` (already set in the stack) makes rate limits see real client
+  addresses behind nginx.
+- The stack does not create the demo accounts. Sign up in the browser, or run the seed against the
+  database yourself. The demo administrator is never created in production.
+- GitHub Actions builds these images and smoke-tests the stack on every push (see the `docker` job).
+
 ## Git workflow
 
 ```bat
@@ -377,7 +422,8 @@ git push -u origin main
 
 Conventional commits are used (`feat:`, `fix:`, `test:`, `docs:`, `chore:`). GitHub Actions
 ([`ci.yml`](.github/workflows/ci.yml)) runs migrations, lint, type-check, tests (with a PostgreSQL
-service), build and a simulation smoke test on every push and pull request.
+service), build and a simulation smoke test on every push and pull request, plus a Playwright
+end-to-end job and a Docker build-and-smoke-test job.
 
 ## Asset guide
 

@@ -59,3 +59,117 @@ jobs:
 
       - name: Simulation smoke test
         run: npm run simulate -- --spins=20000 --seed=1
+
+  e2e:
+    name: end-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: mahjong
+          POSTGRES_PASSWORD: mahjong
+          POSTGRES_DB: mahjong_dynasty
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mahjong -d mahjong_dynasty"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://mahjong:mahjong@localhost:5432/mahjong_dynasty?schema=public
+      JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-1234
+      WEB_ORIGIN: http://localhost:5173
+      API_PORT: '4000'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install the Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Apply database migrations and seed the demo administrator
+        run: |
+          npm run db:deploy
+          npm run db:seed -- --admin-only
+
+      # Playwright starts `npm run dev` (web on :5173, API on :4000) by itself.
+      - name: Run the browser tests
+        run: npm run test:e2e
+
+      - name: Keep the report when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 7
+
+  docker:
+    name: docker images and production stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      POSTGRES_PASSWORD: ci1234567890abcdef
+      JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-1234-abcdef
+      WEB_PORT: '8080'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start the production stack
+        run: docker compose -f docker-compose.prod.yml up --build -d
+
+      - name: Wait until the site answers
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/api/health >/dev/null 2>&1; then exit 0; fi
+            sleep 3
+          done
+          echo "The stack did not become healthy in time" >&2
+          docker compose -f docker-compose.prod.yml ps
+          docker compose -f docker-compose.prod.yml logs --no-color
+          exit 1
+
+      - name: Smoke test through nginx
+        run: |
+          set -euo pipefail
+          base=http://localhost:8080
+          curl -fsS "$base/api/health" | grep -q '"status":"ok"'
+          curl -fsS "$base/" | grep -q '<div id="root">'
+          curl -fsS "$base/game" | grep -q '<div id="root">'   # single-page-app fallback
+          curl -fsS "$base/api/game/config" | grep -q '"demoMode":true'
+
+          # Register, then spin with the auth cookie: proves nginx -> API -> PostgreSQL + migrations.
+          suffix=$(date +%s)
+          curl -fsS -D headers.txt -o register.json -X POST "$base/api/auth/register" \
+            -H 'Content-Type: application/json' -H "Origin: $base" \
+            -d "{\"email\":\"ci_${suffix}@example.com\",\"username\":\"ci_${suffix}\",\"password\":\"CorrectHorse42\"}"
+          grep -q '"role":"PLAYER"' register.json
+          token=$(grep -i '^set-cookie: mjd_token=' headers.txt | sed -E 's/^[Ss]et-[Cc]ookie: (mjd_token=[^;]+);.*/\1/')
+          test -n "$token"
+          curl -fsS -X POST "$base/api/game/spin" \
+            -H 'Content-Type: application/json' -H "Origin: $base" -H "Cookie: $token" \
+            -d "{\"bet\":20,\"requestId\":\"$(cat /proc/sys/kernel/random/uuid)\"}" | grep -q '"totalWin"'
+          curl -fsS "$base/api/leaderboard?period=all" -H "Cookie: $token" | grep -q '"entries"'
+
+      - name: Show the container logs when something failed
+        if: failure()
+        run: docker compose -f docker-compose.prod.yml logs --no-color
+
+      - name: Stop the stack
+        if: always()
+        run: docker compose -f docker-compose.prod.yml down -v

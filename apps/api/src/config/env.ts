@@ -12,6 +12,8 @@ const envSchema = z
     WEB_ORIGIN: z.string().url().default('http://localhost:5173'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).optional(),
+    /** Reverse proxies in front of the API (e.g. 1 behind nginx). 0 = the API is reached directly. */
+    TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
   })
   .superRefine((value, ctx) => {
     if (
