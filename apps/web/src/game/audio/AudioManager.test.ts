@@ -32,7 +32,48 @@ describe('AudioManager', () => {
     await expect(audio.playBgm(null)).resolves.toBeUndefined();
     audio.setMuted(true);
     audio.setVolume(0.3);
+    audio.setMix({ music: 0.2, sfx: 0.9 });
     audio.destroy();
+  });
+
+  it('scales music and effects by their own level times the master volume', async () => {
+    const shots: number[] = [];
+    vi.stubGlobal(
+      'Audio',
+      class extends EventTarget {
+        preload = '';
+        loop = false;
+        volume = 1;
+        muted = false;
+        set src(_value: string) {
+          setTimeout(() => this.dispatchEvent(new Event('canplaythrough')), 0);
+        }
+        load() {}
+        pause() {}
+        cloneNode() {
+          const clone = { volume: 1, play: () => Promise.resolve() };
+          shots.push(0);
+          const index = shots.length - 1;
+          return new Proxy(clone, {
+            set(target, key, value) {
+              if (key === 'volume') shots[index] = value as number;
+              return Reflect.set(target, key, value);
+            },
+          });
+        }
+        play() {
+          return Promise.resolve();
+        }
+      },
+    );
+    const audio = new AudioManager();
+    audio.setVolume(0.5);
+    audio.setMix({ sfx: 0.4 });
+    await audio.play('win'); // no base level: 0.5 * 0.4
+    expect(shots[0]).toBeCloseTo(0.2);
+    audio.setMix({ sfx: 0 });
+    await audio.play('scatter');
+    expect(shots[1]).toBe(0);
   });
 
   it('is a no-op when the Audio API is unavailable', async () => {

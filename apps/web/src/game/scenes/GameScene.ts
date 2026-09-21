@@ -12,6 +12,8 @@ import { GameBoard } from '../objects/GameBoard';
 import { MultiplierDisplay } from '../objects/MultiplierDisplay';
 
 export const READY_EVENT = 'mjd-ready';
+/** Playback speed while the player skips the animation. */
+const SKIP_SPEED = 8;
 
 export interface GameInit {
   board: Board;
@@ -39,6 +41,8 @@ export class GameScene extends Phaser.Scene {
   private scatterEffect!: ScatterEffect;
   private audio!: AudioManager;
   private playing = false;
+  private baseSpeed = 1;
+  private skipping = false;
 
   constructor() {
     super('Game');
@@ -64,6 +68,25 @@ export class GameScene extends Phaser.Scene {
 
   get isPlaying(): boolean {
     return this.playing;
+  }
+
+  /** Speed of every delay and tween (1 = normal, Turbo uses a higher value). Cosmetic only. */
+  setSpeed(speed: number): void {
+    this.baseSpeed = speed;
+    this.applySpeed();
+  }
+
+  /** Fast-forwards the spin that is being presented; the server's result is unchanged. */
+  skip(): void {
+    if (!this.playing) return;
+    this.skipping = true;
+    this.applySpeed();
+  }
+
+  private applySpeed(): void {
+    const speed = this.skipping ? Math.max(this.baseSpeed, SKIP_SPEED) : this.baseSpeed;
+    this.time.timeScale = speed;
+    this.tweens.timeScale = speed;
   }
 
   showBoard(board: Board): void {
@@ -131,6 +154,8 @@ export class GameScene extends Phaser.Scene {
       void this.meter.setValue(result.dragonMeterAfter, true);
     } finally {
       this.playing = false;
+      this.skipping = false;
+      this.applySpeed();
     }
   }
 

@@ -146,9 +146,21 @@
 
 .autoRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
+}
+.autoSelect {
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: var(--jade-dark);
+  color: var(--gold-light);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
 }
 .autoButton {
   min-width: 108px;

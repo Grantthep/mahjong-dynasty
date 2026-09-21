@@ -1,6 +1,6 @@
 import { formatCredits } from '../utils/format';
 import { BetButton, BetValue } from './BetControls';
-import type { AutoMode } from '../store/gameStore';
+import { AUTO_SPIN_OPTIONS, type AutoMode } from '../store/gameStore';
 import { SpinButton } from './SpinButton';
 import styles from './HUD.module.css';
 
@@ -20,6 +20,14 @@ export interface HUDProps {
   onAutoStop?: () => void;
   onAutoPause?: () => void;
   onAutoResume?: () => void;
+  /** Auto spins to play (`null` = until stopped) and how many are left in the current run. */
+  autoLimit?: number | null;
+  autoLeft?: number | null;
+  onAutoLimitChange?: (limit: number | null) => void;
+  /** Turbo plays every animation faster; Skip fast-forwards the spin being shown. */
+  turbo?: boolean;
+  onTurboChange?: (turbo: boolean) => void;
+  onSkip?: () => void;
 }
 
 /** Balance / Win / Bet read-outs, bet controls and the SPIN button. All values come from the server. */
@@ -37,6 +45,12 @@ export function HUD({
   onAutoStop,
   onAutoPause,
   onAutoResume,
+  autoLimit = null,
+  autoLeft = null,
+  onAutoLimitChange,
+  turbo = false,
+  onTurboChange,
+  onSkip,
 }: HUDProps) {
   const inFreeSpins = Boolean(freeSpins && freeSpins.remaining > 0);
   const cannotAfford = !inFreeSpins && balance < bet;
@@ -44,6 +58,7 @@ export function HUD({
   const autoOn = auto !== 'off';
   const paused = auto === 'paused';
   const showAuto = Boolean(onAutoStart && onAutoStop);
+  const showSkip = Boolean(onSkip) && spinning;
 
   return (
     <section className={styles.hud} aria-label="Game controls">
@@ -92,6 +107,22 @@ export function HUD({
 
       {showAuto ? (
         <div className={styles.autoRow}>
+          {!autoOn && onAutoLimitChange ? (
+            <select
+              className={styles.autoSelect}
+              aria-label="Number of auto spins"
+              value={autoLimit === null ? 'inf' : String(autoLimit)}
+              onChange={(event) =>
+                onAutoLimitChange(event.target.value === 'inf' ? null : Number(event.target.value))
+              }
+            >
+              {AUTO_SPIN_OPTIONS.map((option) => (
+                <option key={option ?? 'inf'} value={option === null ? 'inf' : String(option)}>
+                  {option === null ? 'Until stopped' : `${option} spins`}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <button
             type="button"
             className={`${styles.autoButton} ${autoOn ? styles.autoActive : ''}`}
@@ -110,6 +141,21 @@ export function HUD({
               {paused ? 'RESUME' : 'PAUSE'}
             </button>
           ) : null}
+          {onTurboChange ? (
+            <button
+              type="button"
+              className={`${styles.autoButton} ${turbo ? styles.autoActive : ''}`}
+              aria-pressed={turbo}
+              onClick={() => onTurboChange(!turbo)}
+            >
+              TURBO
+            </button>
+          ) : null}
+          {showSkip ? (
+            <button type="button" className={styles.autoButton} onClick={onSkip}>
+              SKIP
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -117,6 +163,7 @@ export function HUD({
         {autoOn ? (
           <span className={styles.freeBadge}>
             {paused ? 'AUTO SPIN PAUSED' : 'AUTO SPIN ON'}
+            {autoLeft !== null ? <small> · {autoLeft} left</small> : null}
             {inFreeSpins && freeSpins ? (
               <small> · {freeSpins.remaining} free spins left</small>
             ) : null}

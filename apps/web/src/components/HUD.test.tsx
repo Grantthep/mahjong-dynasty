@@ -66,6 +66,52 @@ describe('HUD', () => {
     expect(screen.getByRole('button', { name: 'Increase bet' })).toBeDisabled();
   });
 
+  describe('turbo and skip', () => {
+    const autoHandlers = { onAutoStart: vi.fn(), onAutoStop: vi.fn() };
+
+    it('toggles turbo and shows its state', async () => {
+      const onTurboChange = vi.fn();
+      setup({ turbo: false, onTurboChange, ...autoHandlers });
+      const button = screen.getByRole('button', { name: 'TURBO' });
+      expect(button).toHaveAttribute('aria-pressed', 'false');
+      await userEvent.click(button);
+      expect(onTurboChange).toHaveBeenCalledWith(true);
+    });
+
+    it('offers SKIP only while a spin is being shown', async () => {
+      const onSkip = vi.fn();
+      const { rerender } = render(
+        <HUD
+          balance={1000}
+          win={0}
+          bet={20}
+          bets={BET_OPTIONS}
+          spinning={false}
+          onBetChange={vi.fn()}
+          onSpin={vi.fn()}
+          onSkip={onSkip}
+          {...autoHandlers}
+        />,
+      );
+      expect(screen.queryByRole('button', { name: 'SKIP' })).not.toBeInTheDocument();
+      rerender(
+        <HUD
+          balance={1000}
+          win={0}
+          bet={20}
+          bets={BET_OPTIONS}
+          spinning
+          onBetChange={vi.fn()}
+          onSpin={vi.fn()}
+          onSkip={onSkip}
+          {...autoHandlers}
+        />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'SKIP' }));
+      expect(onSkip).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('auto spin', () => {
     const autoHandlers = () => ({
       onAutoStart: vi.fn(),
@@ -98,6 +144,31 @@ describe('HUD', () => {
       expect(screen.getByRole('status')).toHaveTextContent('AUTO SPIN PAUSED');
       await userEvent.click(screen.getByRole('button', { name: 'RESUME' }));
       expect(handlers.onAutoResume).toHaveBeenCalledTimes(1);
+    });
+
+    it('lets the player pick how many auto spins to play, including until stopped', async () => {
+      const onAutoLimitChange = vi.fn();
+      setup({ auto: 'off', autoLimit: null, onAutoLimitChange, ...autoHandlers() });
+      const select = screen.getByRole('combobox', { name: 'Number of auto spins' });
+      expect(select).toHaveValue('inf');
+      await userEvent.selectOptions(select, '25');
+      expect(onAutoLimitChange).toHaveBeenLastCalledWith(25);
+      await userEvent.selectOptions(select, 'inf');
+      expect(onAutoLimitChange).toHaveBeenLastCalledWith(null);
+    });
+
+    it('hides the count picker and shows the spins left while running', () => {
+      setup({
+        auto: 'running',
+        autoLimit: 50,
+        autoLeft: 37,
+        onAutoLimitChange: vi.fn(),
+        ...autoHandlers(),
+      });
+      expect(
+        screen.queryByRole('combobox', { name: 'Number of auto spins' }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveTextContent('AUTO SPIN ON · 37 left');
     });
 
     it('cannot start auto spin without enough balance', () => {

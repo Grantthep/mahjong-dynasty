@@ -17,6 +17,7 @@ export type SoundName = (typeof SOUND_NAMES)[number];
 
 const EXTENSIONS = ['mp3', 'ogg', 'wav'] as const;
 const LOAD_TIMEOUT_MS = 4000;
+const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 const BASE_VOLUME: Partial<Record<SoundName, number>> = {
   'bgm-main': 0.35,
   'bgm-free-spins': 0.4,
@@ -32,6 +33,8 @@ export class AudioManager {
   private readonly lastPlayed = new Map<SoundName, number>();
   private muted = false;
   private volume = 0.7;
+  private musicVolume = 1;
+  private sfxVolume = 1;
   private currentBgm: { name: SoundName; element: HTMLAudioElement } | null = null;
   private wantedBgm: SoundName | null = null;
   private destroyed = false;
@@ -45,12 +48,24 @@ export class AudioManager {
   }
 
   setVolume(volume: number): void {
-    this.volume = Math.min(1, Math.max(0, volume));
+    this.volume = clamp01(volume);
+    this.applyBgmLevel();
+  }
+
+  /** Separate levels for the background music and the sound effects (each scaled by the master volume). */
+  setMix(mix: { music?: number; sfx?: number }): void {
+    if (mix.music !== undefined) this.musicVolume = clamp01(mix.music);
+    if (mix.sfx !== undefined) this.sfxVolume = clamp01(mix.sfx);
+    this.applyBgmLevel();
+  }
+
+  private applyBgmLevel(): void {
     if (this.currentBgm) this.currentBgm.element.volume = this.level(this.currentBgm.name);
   }
 
   private level(name: SoundName): number {
-    return Math.min(1, this.volume * (BASE_VOLUME[name] ?? 1));
+    const mix = name.startsWith('bgm') ? this.musicVolume : this.sfxVolume;
+    return clamp01(this.volume * mix * (BASE_VOLUME[name] ?? 1));
   }
 
   private load(name: SoundName): Promise<HTMLAudioElement | null> {

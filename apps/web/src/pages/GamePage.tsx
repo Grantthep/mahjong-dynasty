@@ -21,11 +21,13 @@ interface OverlayInfo {
   subtitle?: string;
   amount: number;
   tone: 'big' | 'mega' | 'epic' | 'free';
+  fast: boolean;
   resolve: () => void;
 }
 
 const TIER_TITLE = { big: 'BIG WIN', mega: 'MEGA WIN', epic: 'EPIC WIN' } as const;
 const NEXT_FREE_SPIN_DELAY_MS = 900;
+const TURBO_NEXT_SPIN_DELAY_MS = 300;
 
 export default function GamePage() {
   const navigate = useNavigate();
@@ -34,13 +36,31 @@ export default function GamePage() {
   const me = useMe();
   const logout = useLogout();
 
-  const { phase, mode, bet, balance, win, session, muted, volume, error, auto } = useGameStore();
+  const {
+    phase,
+    mode,
+    bet,
+    balance,
+    win,
+    session,
+    muted,
+    volume,
+    musicVolume,
+    sfxVolume,
+    error,
+    auto,
+    autoLeft,
+    autoLimit,
+    turbo,
+  } = useGameStore();
 
   const hostRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<GameController | null>(null);
   const mountedRef = useRef(true);
   const nextSpinTimer = useRef<number | null>(null);
   const spinRef = useRef<() => Promise<void>>(async () => undefined);
+  /** The player pressed Skip during the spin being shown. */
+  const skippedRef = useRef(false);
 
   const [engineReady, setEngineReady] = useState(false);
   const [engineError, setEngineError] = useState<string | null>(null);
@@ -113,11 +133,20 @@ export default function GamePage() {
     audio?.setVolume(volume);
   }, [muted, volume, engineReady]);
 
+  useEffect(() => {
+    controllerRef.current?.audio.setMix({ music: musicVolume, sfx: sfxVolume });
+  }, [musicVolume, sfxVolume, engineReady]);
+
+  useEffect(() => {
+    controllerRef.current?.setTurbo(turbo);
+  }, [turbo, engineReady]);
+
   /* ---------- helpers ---------- */
   const present = useCallback(
-    (info: Omit<OverlayInfo, 'resolve'>) =>
+    (info: Omit<OverlayInfo, 'resolve' | 'fast'>) =>
       new Promise<void>((resolve) => {
-        setOverlay({ ...info, resolve });
+        const fast = useGameStore.getState().turbo || skippedRef.current;
+        setOverlay({ ...info, fast, resolve });
       }),
     [],
   );
@@ -166,6 +195,7 @@ export default function GamePage() {
     if (!controller || controller.isPlaying || store.phase !== 'idle') return;
 
     if (nextSpinTimer.current) window.clearTimeout(nextSpinTimer.current);
+    skippedRef.current = false;
     store.setError(null);
     store.setWin(0);
     store.setPhase('spinning');
@@ -223,16 +253,25 @@ export default function GamePage() {
       if (mountedRef.current) {
         const latest = useGameStore.getState();
         const freeSpinsLeft = result.session.freeSpinsRemaining > 0;
+
+        // Count this spin against the chosen number of auto spins (Free Spins are not counted).
+        if (latest.auto !== 'off' && !result.isFreeSpin && latest.autoLeft !== null) {
+          const left = latest.autoLeft - 1;
+          latest.setAutoLeft(left);
+          if (left <= 0) latest.setAuto('off');
+        }
+
         // Free Spins already play one after another; auto spin also continues normal spins.
         // A paused auto spin holds back both until it is resumed.
-        const wantsNext = latest.auto === 'running' || (freeSpinsLeft && latest.auto === 'off');
+        const autoNow = useGameStore.getState().auto;
+        const wantsNext = autoNow === 'running' || (freeSpinsLeft && autoNow === 'off');
         if (wantsNext && !freeSpinsLeft && result.balanceAfter < latest.bet) {
           latest.setAuto('off');
           latest.setError('Auto spin stopped: not enough DEMO CREDITS for this bet.');
         } else if (wantsNext) {
           nextSpinTimer.current = window.setTimeout(
             () => void spinRef.current(),
-            NEXT_FREE_SPIN_DELAY_MS,
+            useGameStore.getState().turbo ? TURBO_NEXT_SPIN_DELAY_MS : NEXT_FREE_SPIN_DELAY_MS,
           );
         }
       }
@@ -252,7 +291,9 @@ export default function GamePage() {
   };
 
   const startAuto = () => {
-    useGameStore.getState().setAuto('running');
+    const store = useGameStore.getState();
+    store.setAutoLeft(store.autoLimit);
+    store.setAuto('running');
     void spinRef.current(); // no-op if a spin is already in progress; that spin will chain the next
   };
 
@@ -266,6 +307,11 @@ export default function GamePage() {
   const pauseAuto = () => {
     useGameStore.getState().setAuto('paused');
     clearNextSpin();
+  };
+
+  const skipSpin = () => {
+    skippedRef.current = true;
+    controllerRef.current?.skip();
   };
 
   const resumeAuto = () => {
@@ -283,7 +329,13 @@ export default function GamePage() {
       )
         return;
       event.preventDefault();
-      void spinRef.current();
+      // Space spins; while a spin is being shown it skips the animation instead.
+      if (useGameStore.getState().phase === 'spinning') {
+        skippedRef.current = true;
+        controllerRef.current?.skip();
+      } else {
+        void spinRef.current();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -381,16 +433,26 @@ export default function GamePage() {
         onAutoStop={stopAuto}
         onAutoPause={pauseAuto}
         onAutoResume={resumeAuto}
+        autoLimit={autoLimit}
+        autoLeft={autoLeft}
+        onAutoLimitChange={(limit) => useGameStore.getState().setAutoLimit(limit)}
+        turbo={turbo}
+        onTurboChange={(next) => useGameStore.getState().setTurbo(next)}
+        onSkip={skipSpin}
       />
 
       <SettingsPanel
         open={settingsOpen}
         muted={muted}
         volume={volume}
+        musicVolume={musicVolume}
+        sfxVolume={sfxVolume}
         username={me.data?.username}
         onClose={() => setSettingsOpen(false)}
         onMutedChange={(next) => useGameStore.getState().setMuted(next)}
         onVolumeChange={(next) => useGameStore.getState().setVolume(next)}
+        onMusicVolumeChange={(next) => useGameStore.getState().setMusicVolume(next)}
+        onSfxVolumeChange={(next) => useGameStore.getState().setSfxVolume(next)}
         onLogout={() => logout.mutate(undefined, { onSettled: () => navigate('/') })}
       />
 
@@ -400,6 +462,7 @@ export default function GamePage() {
           subtitle={overlay.subtitle}
           amount={overlay.amount}
           tone={overlay.tone}
+          fast={overlay.fast}
           onDone={() => {
             overlay.resolve();
             setOverlay(null);

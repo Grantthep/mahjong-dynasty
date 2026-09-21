@@ -5,10 +5,14 @@ interface Props {
   open: boolean;
   muted: boolean;
   volume: number;
+  musicVolume: number;
+  sfxVolume: number;
   username?: string;
   onClose: () => void;
   onMutedChange: (muted: boolean) => void;
   onVolumeChange: (volume: number) => void;
+  onMusicVolumeChange: (volume: number) => void;
+  onSfxVolumeChange: (volume: number) => void;
   onLogout: () => void;
 }
 
@@ -16,10 +20,14 @@ export function SettingsPanel({
   open,
   muted,
   volume,
+  musicVolume,
+  sfxVolume,
   username,
   onClose,
   onMutedChange,
   onVolumeChange,
+  onMusicVolumeChange,
+  onSfxVolumeChange,
   onLogout,
 }: Props) {
   if (!open) return null;
@@ -56,7 +64,7 @@ export function SettingsPanel({
           />
         </label>
         <label className={styles.row}>
-          <span>Volume</span>
+          <span>Master volume</span>
           <input
             type="range"
             min={0}
@@ -65,6 +73,30 @@ export function SettingsPanel({
             disabled={muted}
             onChange={(event) => onVolumeChange(Number(event.target.value) / 100)}
             aria-label="Volume"
+          />
+        </label>
+        <label className={styles.row}>
+          <span>Music</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(musicVolume * 100)}
+            disabled={muted}
+            onChange={(event) => onMusicVolumeChange(Number(event.target.value) / 100)}
+            aria-label="Music volume"
+          />
+        </label>
+        <label className={styles.row}>
+          <span>Effects</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(sfxVolume * 100)}
+            disabled={muted}
+            onChange={(event) => onSfxVolumeChange(Number(event.target.value) / 100)}
+            aria-label="Effects volume"
           />
         </label>
 

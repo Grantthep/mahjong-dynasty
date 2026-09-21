@@ -19,6 +19,7 @@ export interface GameControllerInit {
 }
 
 const READY_TIMEOUT_MS = 30_000;
+const TURBO_SPEED = 2.4;
 
 /** The only bridge between React and Phaser. React never touches Phaser objects directly. */
 export class GameController {
@@ -113,6 +114,16 @@ export class GameController {
 
   showBoard(board: Board): void {
     this.scene.showBoard(board);
+  }
+
+  /** Turbo plays every animation faster. */
+  setTurbo(turbo: boolean): void {
+    this.scene.setSpeed(turbo ? TURBO_SPEED : 1);
+  }
+
+  /** Fast-forwards the spin currently being presented. */
+  skip(): void {
+    this.scene.skip();
   }
 
   setMeter(value: number): void {
