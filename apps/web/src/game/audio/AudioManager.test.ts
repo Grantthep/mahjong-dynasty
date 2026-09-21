@@ -76,6 +76,63 @@ describe('AudioManager', () => {
     expect(shots[1]).toBe(0);
   });
 
+  it('starts the music on the first interaction after the browser blocked it', async () => {
+    let attempts = 0;
+    vi.stubGlobal(
+      'Audio',
+      class extends EventTarget {
+        preload = '';
+        loop = false;
+        volume = 1;
+        muted = false;
+        paused = true;
+        set src(_value: string) {
+          setTimeout(() => this.dispatchEvent(new Event('canplaythrough')), 0);
+        }
+        load() {}
+        pause() {}
+        cloneNode() {
+          return this;
+        }
+        play() {
+          attempts++;
+          if (attempts === 1) return Promise.reject(new Error('NotAllowedError'));
+          this.paused = false;
+          return Promise.resolve();
+        }
+      },
+    );
+    const audio = new AudioManager();
+    await audio.playBgm('bgm-main');
+    expect(attempts).toBe(1); // blocked, as browsers do before any click
+
+    audio.unlock();
+    await Promise.resolve();
+    expect(attempts).toBe(2);
+
+    audio.unlock(); // already playing: nothing more to do
+    await Promise.resolve();
+    expect(attempts).toBe(2);
+  });
+
+  it('does not try to unlock while muted', async () => {
+    const created = vi.fn();
+    vi.stubGlobal(
+      'Audio',
+      class extends MissingAudio {
+        constructor() {
+          super();
+          created();
+        }
+      },
+    );
+    const audio = new AudioManager();
+    audio.setMuted(true);
+    audio.unlock();
+    await Promise.resolve();
+    expect(created).not.toHaveBeenCalled();
+  });
+
   it('is a no-op when the Audio API is unavailable', async () => {
     vi.stubGlobal('Audio', undefined);
     const audio = new AudioManager();

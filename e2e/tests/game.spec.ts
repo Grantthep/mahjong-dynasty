@@ -130,3 +130,61 @@ test.describe('menus and pages', () => {
     await expect(page.getByRole('main')).not.toContainText(player.email);
   });
 });
+
+test.describe('sound', () => {
+  const SOUNDS = [
+    'bgm-main',
+    'bgm-free-spins',
+    'button',
+    'spin',
+    'tile-drop',
+    'cascade',
+    'win',
+    'big-win',
+    'wild',
+    'scatter',
+    'dragon-fortune',
+    'free-spins',
+  ];
+
+  test('the browser can decode every sound file', async ({ page }) => {
+    await page.goto('/');
+    const durations = await page.evaluate(async (names) => {
+      const load = (name: string) =>
+        new Promise<number>((resolve) => {
+          const audio = new Audio();
+          audio.preload = 'auto';
+          audio.oncanplaythrough = () => resolve(audio.duration);
+          audio.onerror = () => resolve(-1);
+          audio.src = `/assets/audio/${name}.wav`;
+          audio.load();
+        });
+      const result: Record<string, number> = {};
+      for (const name of names) result[name] = await load(name);
+      return result;
+    }, SOUNDS);
+
+    for (const name of SOUNDS) {
+      expect(durations[name], `${name} could not be decoded`).toBeGreaterThan(0.05);
+    }
+    expect(durations['bgm-main']).toBeGreaterThan(10);
+  });
+
+  test('entering the game fetches the background music', async ({ page }) => {
+    await registerByApi(page);
+    const music = page.waitForResponse((res) =>
+      /\/assets\/audio\/bgm-main\.(wav|mp3|ogg)$/.test(res.url()),
+    );
+    await openGame(page);
+    expect((await music).ok()).toBe(true);
+
+    // A spin plays effects; make sure they are fetched without errors.
+    const failures: string[] = [];
+    page.on('response', (res) => {
+      if (res.url().includes('/assets/audio/') && !res.ok()) failures.push(res.url());
+    });
+    await spinButton(page).click();
+    await waitForSpinToFinish(page);
+    expect(failures).toEqual([]);
+  });
+});

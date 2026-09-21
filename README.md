@@ -66,7 +66,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **Turbo** (faster animations; pressing the Space bar while a spin plays fast-forwards it), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
 - **Paytable** in the game (gear-menu or table button) and on the About page, showing the credits paid per way at the bet you pick
 - **English / Chinese (中文)** language switch on every page; the choice is remembered (translations live in `apps/web/src/i18n/translations.ts`)
-- Optional audio (12 sounds) – the game is fully playable if no audio files exist
+- Audio: 12 original generated placeholder sounds (effects + two music loops), separate Music / Effects volume; the game is fully playable if any file is missing
 - Responsive: 1920×1080, 1366×768, tablet, mobile portrait and landscape
 - RTP / hit-frequency **simulator** (`npm run simulate`)
 - 150+ automated tests (engine unit tests, API integration tests against PostgreSQL, React tests)
@@ -436,7 +436,7 @@ All artwork lives in `apps/web/public/assets/` and is documented in
 | `backgrounds/` | `palace-normal.svg`, `palace-free.svg`                                                                                                                       |
 | `ui/`          | `logo.svg`, `dragon-icon.svg`, `spin-ornament.svg`                                                                                                           |
 | `effects/`     | `dragon.svg`, `glow.svg`, `particle.svg`                                                                                                                     |
-| `audio/`       | _(empty – drop `.mp3` / `.ogg` / `.wav` files here)_                                                                                                         |
+| `audio/`       | 12 generated placeholder sounds (`.wav`); replace with your own `.mp3` / `.ogg` / `.wav`                                                                     |
 
 ## Replacing artwork
 
@@ -450,7 +450,9 @@ All artwork lives in `apps/web/public/assets/` and is documented in
 
 Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-drop`, `cascade`, `win`,
 `big-win`, `wild`, `scatter`, `dragon-fortune`, `free-spins` (`.mp3`, `.ogg` or `.wav`) to
-`apps/web/public/assets/audio/`. Missing files are silently skipped.
+`apps/web/public/assets/audio/`. Missing files are silently skipped. The repository includes generated
+placeholders (`npm run audio:generate`, which overwrites them); browsers only allow sound after a click or
+key press, and the game starts the music on the first one.
 
 ## Known limitations
 
@@ -466,7 +468,7 @@ Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-dr
 
 ## Future improvements
 
-- Final artwork and audio; animated sprite-sheet Dragon
+- Final artwork and professional audio (placeholders are generated); animated sprite-sheet Dragon
 - Turbo / skip-animation and autoplay options, sound-mix settings
 - Additional bonus features (e.g. wild-reel respins) and per-bet paytable display
 - Leaderboards of _demo_ wins, admin/analytics dashboard

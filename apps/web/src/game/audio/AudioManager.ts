@@ -41,6 +41,20 @@ export class AudioManager {
 
   constructor(private readonly baseUrl = '/assets/audio') {}
 
+  /**
+   * Browsers refuse to play sound until the player has interacted with the page. Call this from a
+   * click / key handler: it (re)starts the background music if the first attempt was blocked.
+   */
+  unlock(): void {
+    if (this.muted || this.destroyed) return;
+    const bgm = this.currentBgm;
+    if (!bgm) {
+      void this.playBgm(this.wantedBgm);
+    } else if (bgm.element.paused) {
+      void Promise.resolve(bgm.element.play()).catch(() => undefined);
+    }
+  }
+
   setMuted(muted: boolean): void {
     this.muted = muted;
     if (this.currentBgm) this.currentBgm.element.muted = muted;

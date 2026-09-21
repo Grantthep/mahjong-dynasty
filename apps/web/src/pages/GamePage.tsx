@@ -150,6 +150,17 @@ export default function GamePage() {
     controllerRef.current?.audio.setMix({ music: musicVolume, sfx: sfxVolume });
   }, [musicVolume, sfxVolume, engineReady]);
 
+  // The first click or key press lets the browser start the music (autoplay is blocked before it).
+  useEffect(() => {
+    const unlock = () => controllerRef.current?.audio.unlock();
+    window.addEventListener('pointerdown', unlock);
+    window.addEventListener('keydown', unlock);
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+  }, []);
+
   useEffect(() => {
     controllerRef.current?.setTurbo(turbo);
   }, [turbo, engineReady]);
