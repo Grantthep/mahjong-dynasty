@@ -65,4 +65,44 @@ describe('HUD', () => {
     expect(screen.getByRole('status')).toHaveTextContent('FREE SPINS · 6 REMAINING');
     expect(screen.getByRole('button', { name: 'Increase bet' })).toBeDisabled();
   });
+
+  describe('auto spin', () => {
+    const autoHandlers = () => ({
+      onAutoStart: vi.fn(),
+      onAutoStop: vi.fn(),
+      onAutoPause: vi.fn(),
+      onAutoResume: vi.fn(),
+    });
+
+    it('starts auto spin and offers no PAUSE while it is off', async () => {
+      const handlers = autoHandlers();
+      setup({ auto: 'off', ...handlers });
+      expect(screen.queryByRole('button', { name: 'PAUSE' })).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'AUTO SPIN' }));
+      expect(handlers.onAutoStart).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows STOP AUTO and PAUSE while running', async () => {
+      const handlers = autoHandlers();
+      setup({ auto: 'running', ...handlers });
+      expect(screen.getByRole('status')).toHaveTextContent('AUTO SPIN ON');
+      await userEvent.click(screen.getByRole('button', { name: 'PAUSE' }));
+      expect(handlers.onAutoPause).toHaveBeenCalledTimes(1);
+      await userEvent.click(screen.getByRole('button', { name: 'STOP AUTO' }));
+      expect(handlers.onAutoStop).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows RESUME while paused', async () => {
+      const handlers = autoHandlers();
+      setup({ auto: 'paused', ...handlers });
+      expect(screen.getByRole('status')).toHaveTextContent('AUTO SPIN PAUSED');
+      await userEvent.click(screen.getByRole('button', { name: 'RESUME' }));
+      expect(handlers.onAutoResume).toHaveBeenCalledTimes(1);
+    });
+
+    it('cannot start auto spin without enough balance', () => {
+      setup({ balance: 5, bet: 20, auto: 'off', ...autoHandlers() });
+      expect(screen.getByRole('button', { name: 'AUTO SPIN' })).toBeDisabled();
+    });
+  });
 });

@@ -3,6 +3,8 @@ import { DEFAULT_BET, type SessionSnapshot } from '@mahjong/shared';
 
 export type GamePhase = 'loading' | 'idle' | 'spinning';
 export type GameMode = 'base' | 'free';
+/** Auto spin: `paused` keeps the session but holds back every automatic spin until resumed. */
+export type AutoMode = 'off' | 'running' | 'paused';
 
 interface SoundSettings {
   muted: boolean;
@@ -45,6 +47,7 @@ interface GameUiState extends SoundSettings {
   win: number;
   session: SessionSnapshot;
   error: string | null;
+  auto: AutoMode;
 
   hydrate: (args: { balance: number; session: SessionSnapshot; defaultBet: number }) => void;
   setPhase: (phase: GamePhase) => void;
@@ -54,6 +57,7 @@ interface GameUiState extends SoundSettings {
   setWin: (win: number) => void;
   setSession: (session: SessionSnapshot) => void;
   setError: (error: string | null) => void;
+  setAuto: (auto: AutoMode) => void;
   setMuted: (muted: boolean) => void;
   setVolume: (volume: number) => void;
 }
@@ -76,6 +80,7 @@ export const useGameStore = create<GameUiState>((set, get) => ({
   win: 0,
   session: EMPTY_SESSION,
   error: null,
+  auto: 'off',
 
   hydrate: ({ balance, session, defaultBet }) =>
     set({
@@ -94,6 +99,7 @@ export const useGameStore = create<GameUiState>((set, get) => ({
   setWin: (win) => set({ win }),
   setSession: (session) => set({ session }),
   setError: (error) => set({ error }),
+  setAuto: (auto) => set({ auto }),
   setMuted: (muted) => {
     set({ muted });
     saveSound({ muted, volume: get().volume });

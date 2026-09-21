@@ -34,7 +34,7 @@ export default function GamePage() {
   const me = useMe();
   const logout = useLogout();
 
-  const { phase, mode, bet, balance, win, session, muted, volume, error } = useGameStore();
+  const { phase, mode, bet, balance, win, session, muted, volume, error, auto } = useGameStore();
 
   const hostRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<GameController | null>(null);
@@ -103,6 +103,7 @@ export default function GamePage() {
     return () => {
       mountedRef.current = false;
       if (nextSpinTimer.current) window.clearTimeout(nextSpinTimer.current);
+      useGameStore.getState().setAuto('off');
     };
   }, []);
 
@@ -219,19 +220,58 @@ export default function GamePage() {
         controller.setMode('base');
       }
 
-      if (mountedRef.current && result.session.freeSpinsRemaining > 0) {
-        nextSpinTimer.current = window.setTimeout(
-          () => void spinRef.current(),
-          NEXT_FREE_SPIN_DELAY_MS,
-        );
+      if (mountedRef.current) {
+        const latest = useGameStore.getState();
+        const freeSpinsLeft = result.session.freeSpinsRemaining > 0;
+        // Free Spins already play one after another; auto spin also continues normal spins.
+        // A paused auto spin holds back both until it is resumed.
+        const wantsNext = latest.auto === 'running' || (freeSpinsLeft && latest.auto === 'off');
+        if (wantsNext && !freeSpinsLeft && result.balanceAfter < latest.bet) {
+          latest.setAuto('off');
+          latest.setError('Auto spin stopped: not enough DEMO CREDITS for this bet.');
+        } else if (wantsNext) {
+          nextSpinTimer.current = window.setTimeout(
+            () => void spinRef.current(),
+            NEXT_FREE_SPIN_DELAY_MS,
+          );
+        }
       }
     } catch (cause) {
+      useGameStore.getState().setAuto('off');
       await handleError(cause);
     } finally {
       if (mountedRef.current) useGameStore.getState().setPhase('idle');
     }
   }, [handleError, present]);
   spinRef.current = spin;
+
+  /* ---------- auto spin ---------- */
+  const clearNextSpin = () => {
+    if (nextSpinTimer.current) window.clearTimeout(nextSpinTimer.current);
+    nextSpinTimer.current = null;
+  };
+
+  const startAuto = () => {
+    useGameStore.getState().setAuto('running');
+    void spinRef.current(); // no-op if a spin is already in progress; that spin will chain the next
+  };
+
+  const stopAuto = () => {
+    const store = useGameStore.getState();
+    store.setAuto('off');
+    // Free Spins that are already running keep their own automatic chain.
+    if (store.session.freeSpinsRemaining === 0) clearNextSpin();
+  };
+
+  const pauseAuto = () => {
+    useGameStore.getState().setAuto('paused');
+    clearNextSpin();
+  };
+
+  const resumeAuto = () => {
+    useGameStore.getState().setAuto('running');
+    void spinRef.current();
+  };
 
   /* Space bar spins (unless a control has focus). */
   useEffect(() => {
@@ -336,6 +376,11 @@ export default function GamePage() {
           void controllerRef.current?.audio.play('button');
         }}
         onSpin={() => void spin()}
+        auto={auto}
+        onAutoStart={startAuto}
+        onAutoStop={stopAuto}
+        onAutoPause={pauseAuto}
+        onAutoResume={resumeAuto}
       />
 
       <SettingsPanel

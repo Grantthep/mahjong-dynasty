@@ -59,6 +59,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - Registration, login, logout (bcrypt + JWT in an **HttpOnly** cookie), protected routes
 - Profile with lifetime stats and recent spins; spin history endpoint
 - Idempotent, transaction-safe spins (double clicks and concurrent requests cannot double-charge)
+- **Auto spin** with PAUSE / RESUME and STOP AUTO; it stops by itself on an error or when the balance can't cover the bet
 - Optional audio (12 sounds) – the game is fully playable if no audio files exist
 - Responsive: 1920×1080, 1366×768, tablet, mobile portrait and landscape
 - RTP / hit-frequency **simulator** (`npm run simulate`)
@@ -387,7 +388,7 @@ Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-dr
 
 - **Demo maths only** – tuned by simulation, not certified; return varies slightly with bet size
   because winnings are whole credits.
-- Free Spins are auto-played one after another; there is no skip / turbo / autoplay UI yet.
+- Free Spins are auto-played one after another; there is no skip / turbo UI yet.
 - Placeholder artwork is generated SVG; the CJK glyphs in the tiles rely on system fonts
   (Windows, macOS, Android and iOS all include suitable ones).
 - No password reset or email verification (there is no email service by design).

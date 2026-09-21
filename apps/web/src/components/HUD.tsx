@@ -1,5 +1,6 @@
 import { formatCredits } from '../utils/format';
 import { BetButton, BetValue } from './BetControls';
+import type { AutoMode } from '../store/gameStore';
 import { SpinButton } from './SpinButton';
 import styles from './HUD.module.css';
 
@@ -13,6 +14,12 @@ export interface HUDProps {
   freeSpins?: { remaining: number; total: number } | null;
   onBetChange: (bet: number) => void;
   onSpin: () => void;
+  /** Auto spin state; omit the handlers to hide the auto controls. */
+  auto?: AutoMode;
+  onAutoStart?: () => void;
+  onAutoStop?: () => void;
+  onAutoPause?: () => void;
+  onAutoResume?: () => void;
 }
 
 /** Balance / Win / Bet read-outs, bet controls and the SPIN button. All values come from the server. */
@@ -25,10 +32,18 @@ export function HUD({
   freeSpins,
   onBetChange,
   onSpin,
+  auto = 'off',
+  onAutoStart,
+  onAutoStop,
+  onAutoPause,
+  onAutoResume,
 }: HUDProps) {
   const inFreeSpins = Boolean(freeSpins && freeSpins.remaining > 0);
   const cannotAfford = !inFreeSpins && balance < bet;
   const betLocked = spinning || inFreeSpins;
+  const autoOn = auto !== 'off';
+  const paused = auto === 'paused';
+  const showAuto = Boolean(onAutoStart && onAutoStop);
 
   return (
     <section className={styles.hud} aria-label="Game controls">
@@ -75,8 +90,38 @@ export function HUD({
         />
       </div>
 
+      {showAuto ? (
+        <div className={styles.autoRow}>
+          <button
+            type="button"
+            className={`${styles.autoButton} ${autoOn ? styles.autoActive : ''}`}
+            aria-pressed={autoOn}
+            disabled={!autoOn && cannotAfford}
+            onClick={autoOn ? onAutoStop : onAutoStart}
+          >
+            {autoOn ? 'STOP AUTO' : 'AUTO SPIN'}
+          </button>
+          {autoOn ? (
+            <button
+              type="button"
+              className={`${styles.autoButton} ${paused ? styles.autoPaused : ''}`}
+              onClick={paused ? onAutoResume : onAutoPause}
+            >
+              {paused ? 'RESUME' : 'PAUSE'}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className={styles.notice} role="status" aria-live="polite">
-        {inFreeSpins && freeSpins ? (
+        {autoOn ? (
+          <span className={styles.freeBadge}>
+            {paused ? 'AUTO SPIN PAUSED' : 'AUTO SPIN ON'}
+            {inFreeSpins && freeSpins ? (
+              <small> · {freeSpins.remaining} free spins left</small>
+            ) : null}
+          </span>
+        ) : inFreeSpins && freeSpins ? (
           <span className={styles.freeBadge}>
             FREE SPINS · {freeSpins.remaining} REMAINING
             <small> (bet locked at {formatCredits(bet)})</small>

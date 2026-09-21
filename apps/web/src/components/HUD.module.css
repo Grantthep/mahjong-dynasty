@@ -144,6 +144,44 @@
   opacity: 0.55;
 }
 
+.autoRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.autoButton {
+  min-width: 108px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, var(--jade-light), var(--jade-dark));
+  color: var(--gold-light);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+.autoButton:hover:not(:disabled) {
+  box-shadow: 0 0 16px rgba(214, 168, 75, 0.45);
+}
+.autoButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.autoActive {
+  border-color: var(--gold-light);
+  box-shadow: 0 0 14px rgba(242, 210, 124, 0.5);
+}
+.autoPaused {
+  color: var(--ivory);
+  border-color: var(--ivory);
+}
+
 .notice {
   min-height: 1.3em;
   text-align: center;
@@ -204,6 +242,14 @@
   }
   .notice {
     display: none;
+  }
+  .autoRow {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .autoButton {
+    min-width: 92px;
+    padding: 6px 10px;
   }
   .spin {
     width: 76px;
