@@ -322,6 +322,27 @@ npm run dev
 Open the frontend in your browser, click **ENTER GAME**, log in with the demo account (or register a
 new one) and press **SPIN** (or the space bar). Use `localhost`, not `127.0.0.1` (CORS origin).
 
+## Playing on a phone (same Wi-Fi)
+
+```bat
+npm run db:embedded     :: terminal 1, if the database is not running yet
+npm run dev:phone       :: terminal 2, instead of "npm run dev"
+```
+
+The script prints an address such as `http://192.168.1.110:5173`. Open it in the phone's browser while the
+phone is on the **same Wi-Fi** as the computer (not mobile data). It starts the game so that it listens on
+the network and tells the API to accept that address (a normal `npm run dev` refuses logins from
+anywhere but `localhost`).
+
+- If the page does not load, Windows Firewall is probably blocking it: allow **Node.js** on **private**
+  networks when Windows asks, and make sure the Wi-Fi is set to a _Private_ network in Windows settings.
+  Some guest / public Wi-Fi networks block devices from talking to each other.
+- If several addresses are listed, pick the Wi-Fi one, or force it: `set LAN_IP=192.168.1.50` then run
+  the script again.
+- Sound starts after the first tap. Use **trusted home networks only**: everyone on the network can reach
+  the game, and the seeded demo accounts have well-known passwords.
+- To play away from home, deploy it (see Docker deployment) or expose it through a tunnel.
+
 ## Testing
 
 ```bat
