@@ -26,7 +26,7 @@ function assertOutcomeInvariants(outcome: SpinOutcome) {
   dims(outcome.finalBoard);
 
   let running = 0;
-  let expectedBoard = outcome.initialBoard;
+  let expectedBoard = outcome.wildReelRespin?.board ?? outcome.initialBoard;
   outcome.cascades.forEach((step, i) => {
     expect(step.index).toBe(i + 1);
     expect(step.board).toEqual(expectedBoard);

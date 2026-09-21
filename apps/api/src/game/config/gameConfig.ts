@@ -26,7 +26,10 @@ export interface GameConfig {
   maxWinMultiplier: number;
   /** Safety valve against runaway cascades. */
   maxCascades: number;
-  /** Credits paid PER WAY as a multiple of the bet, keyed by number of reels (3..6). */
+  /**
+   * Credits paid PER WAY as a multiple of the bet, keyed by number of reels (3..6).
+   * Tuned together with wildReelRespin.chance so the simulated return stays near 95.5%.
+   */
   paytable: Record<RegularSymbolId, Record<number, number>>;
   weights: { base: ReelWeights; freeSpins: ReelWeights };
   /** Multiplier by winning-cascade number; the last value repeats for later cascades. */
@@ -44,6 +47,8 @@ export interface GameConfig {
   };
   /** Win / bet ratios that trigger the BIG WIN presentation. */
   bigWin: { big: number; mega: number; epic: number };
+  /** Wild Reel Respin: chance (0..1) that a Wild on the first board locks its reel and respins the rest. */
+  wildReelRespin: { chance: number };
 }
 
 const reels = (value: number) => [value, value, value, value, value, value] as const;
@@ -83,15 +88,15 @@ export const GAME_CONFIG: GameConfig = {
   maxWinMultiplier: 5000,
   maxCascades: 25,
   paytable: {
-    circle: { 3: 0.007, 4: 0.016, 5: 0.04, 6: 0.098 },
-    bamboo: { 3: 0.007, 4: 0.016, 5: 0.04, 6: 0.098 },
-    character: { 3: 0.008, 4: 0.02, 5: 0.048, 6: 0.115 },
-    'five-character': { 3: 0.013, 4: 0.032, 5: 0.08, 6: 0.195 },
-    'eight-character': { 3: 0.016, 4: 0.04, 5: 0.098, 6: 0.24 },
-    'east-wind': { 3: 0.02, 4: 0.048, 5: 0.126, 6: 0.32 },
-    'white-dragon': { 3: 0.032, 4: 0.08, 5: 0.195, 6: 0.48 },
-    'green-dragon': { 3: 0.04, 4: 0.098, 5: 0.24, 6: 0.64 },
-    'red-dragon': { 3: 0.048, 4: 0.125, 5: 0.32, 6: 0.8 },
+    circle: { 3: 0.0065, 4: 0.0149, 5: 0.0372, 6: 0.0911 },
+    bamboo: { 3: 0.0065, 4: 0.0149, 5: 0.0372, 6: 0.0911 },
+    character: { 3: 0.0074, 4: 0.0186, 5: 0.0446, 6: 0.107 },
+    'five-character': { 3: 0.0121, 4: 0.0298, 5: 0.0744, 6: 0.1814 },
+    'eight-character': { 3: 0.0149, 4: 0.0372, 5: 0.0911, 6: 0.2232 },
+    'east-wind': { 3: 0.0186, 4: 0.0446, 5: 0.1172, 6: 0.2976 },
+    'white-dragon': { 3: 0.0298, 4: 0.0744, 5: 0.1814, 6: 0.4464 },
+    'green-dragon': { 3: 0.0372, 4: 0.0911, 5: 0.2232, 6: 0.5952 },
+    'red-dragon': { 3: 0.0446, 4: 0.1163, 5: 0.2976, 6: 0.744 },
   },
   weights: { base: BASE_WEIGHTS, freeSpins: FREE_SPIN_WEIGHTS },
   multipliers: { base: [1, 2, 3, 5, 8], freeSpins: [2, 4, 6, 10] },
@@ -114,4 +119,5 @@ export const GAME_CONFIG: GameConfig = {
     maxWilds: 6,
   },
   bigWin: { big: 15, mega: 40, epic: 100 },
+  wildReelRespin: { chance: 0.25 },
 };

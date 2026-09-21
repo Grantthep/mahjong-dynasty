@@ -53,6 +53,7 @@ export default function AboutPage() {
             />
             <Rule text={t('about.dragon')} />
             <Rule text={t('about.wilds')} />
+            <Rule text={t('about.wildReel')} />
             <Rule
               text={t('about.free', {
                 awards,

@@ -231,6 +231,12 @@ export default function GamePage() {
       await controller.playSpin(result, {
         onWin: (total) => useGameStore.getState().setWin(total),
         onDim: setDim,
+        labels: {
+          wildReel: tr('wild.reelBanner'),
+          freeSpins: tr('canvas.freeSpins'),
+          awarded: (spins, retrigger) =>
+            tr(retrigger ? 'canvas.retrigger' : 'canvas.awarded', { count: spins }),
+        },
         onEnterFreeSpins: () => {
           useGameStore.getState().setMode('free');
           controller.setMode('free');

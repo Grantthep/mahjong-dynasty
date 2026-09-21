@@ -20,6 +20,9 @@ export interface SimulationReport {
   dragonFortuneTriggers: number;
   /** Dragon Fortune triggers per spin played (paid + free). */
   dragonFortuneFrequency: number;
+  wildReelRespins: number;
+  /** Wild Reel Respins per spin played (paid + free). */
+  wildReelRespinFrequency: number;
   largestWin: number;
   largestWinMultiple: number;
 }
@@ -45,6 +48,7 @@ export function runSimulation(
   let cascadeCount = 0;
   let freeSpinTriggers = 0;
   let dragonFortuneTriggers = 0;
+  let wildReelRespins = 0;
   let largestWin = 0;
   let largestWinMultiple = 0;
   let totalSpins = 0;
@@ -56,6 +60,7 @@ export function runSimulation(
     if (outcome.totalWin > 0) hits++;
     cascadeCount += outcome.cascades.length;
     dragonFortuneTriggers += outcome.dragonFortuneTriggers;
+    if (outcome.wildReelRespin) wildReelRespins++;
     if (outcome.totalWin > largestWin) largestWin = outcome.totalWin;
     largestWinMultiple = Math.max(largestWinMultiple, outcome.totalWin / outcome.bet);
     return outcome;
@@ -89,6 +94,8 @@ export function runSimulation(
     freeSpinFrequency: paidSpins === 0 ? 0 : freeSpinTriggers / paidSpins,
     dragonFortuneTriggers,
     dragonFortuneFrequency: totalSpins === 0 ? 0 : dragonFortuneTriggers / totalSpins,
+    wildReelRespins,
+    wildReelRespinFrequency: totalSpins === 0 ? 0 : wildReelRespins / totalSpins,
     largestWin,
     largestWinMultiple,
   };

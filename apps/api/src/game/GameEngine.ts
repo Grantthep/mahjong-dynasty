@@ -15,6 +15,7 @@ import { DragonFortuneEngine } from './DragonFortuneEngine';
 import { FreeSpinEngine } from './FreeSpinEngine';
 import { MultiplierEngine } from './MultiplierEngine';
 import type { RandomSource } from './RandomSource';
+import { WildReelRespinEngine } from './WildReelRespinEngine';
 import { WinEvaluator } from './WinEvaluator';
 
 /**
@@ -29,6 +30,7 @@ export class GameEngine {
   private readonly multipliers: MultiplierEngine;
   private readonly dragon: DragonFortuneEngine;
   private readonly freeSpins: FreeSpinEngine;
+  private readonly wildReels: WildReelRespinEngine;
 
   constructor(
     rng: RandomSource,
@@ -39,6 +41,7 @@ export class GameEngine {
     this.multipliers = new MultiplierEngine(config);
     this.dragon = new DragonFortuneEngine(rng, config);
     this.freeSpins = new FreeSpinEngine(config);
+    this.wildReels = new WildReelRespinEngine(rng, this.generator, config);
   }
 
   bigWinTier(win: number, bet: number): BigWinTier {
@@ -62,7 +65,8 @@ export class GameEngine {
     const winCap = bet * this.config.maxWinMultiplier;
 
     const initialBoard = this.generator.generateBoard(mode);
-    let board: Board = initialBoard;
+    const wildReelRespin = this.wildReels.tryRespin(initialBoard, mode);
+    let board: Board = wildReelRespin?.board ?? initialBoard;
     let meter = session.dragonMeter;
     let totalWin = 0;
     let cappedAtMaxWin = false;
@@ -134,6 +138,7 @@ export class GameEngine {
       isFreeSpin,
       freeSpinIndex: isFreeSpin ? session.freeSpinsTotal - session.freeSpinsRemaining + 1 : 0,
       initialBoard,
+      wildReelRespin,
       cascades,
       finalBoard: board,
       totalWin,

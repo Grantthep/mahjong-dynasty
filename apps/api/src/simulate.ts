@@ -56,6 +56,9 @@ console.log(
   ` Dragon Fortune Frequency     : ${pct(report.dragonFortuneFrequency)}  (${oneIn(report.dragonFortuneFrequency)})`,
 );
 console.log(
+  ` Wild Reel Respin Frequency  : ${pct(report.wildReelRespinFrequency)}  (${oneIn(report.wildReelRespinFrequency)})`,
+);
+console.log(
   ` Largest Demo Win             : ${n(report.largestWin)}  (${report.largestWinMultiple.toFixed(1)}x bet)`,
 );
 console.log(` Simulated in                 : ${seconds}s`);

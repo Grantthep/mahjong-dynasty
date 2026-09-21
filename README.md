@@ -54,6 +54,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **Cascading wins** with the multiplier ladder ×1 → ×2 → ×3 → ×5 → ×8 (Free Spins: ×2 → ×4 → ×6 → ×10)
 - **Dragon Fortune** meter → golden dragon sweeps the board and turns 3–6 server-chosen tiles into Wilds
 - **Golden Dragon Wild** and **Lotus Scatter** (3 / 4 / 5+ Lotus = 8 / 12 / 15 Free Spins, retriggers supported)
+- **Wild Reel Respin** – when a Golden Wild lands on the first board it can lock its whole reel as Wilds while the other reels respin once (chance set in `gameConfig.ts`, decided by the server)
 - **Free Spins** stored server-side – refreshing the browser never loses them; the palace transforms into a warm red/gold atmosphere
 - BIG / MEGA / EPIC WIN presentation with count-up (only for large wins)
 - Registration, login, logout (bcrypt + JWT in an **HttpOnly** cookie), protected routes
@@ -392,6 +393,7 @@ Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-dr
 - **Demo maths only** – tuned by simulation, not certified; return varies slightly with bet size
   because winnings are whole credits.
 - Free Spins are auto-played one after another (Pause, Turbo and Skip apply to them too).
+- Canvas text (FREE SPINS banner etc.) and page text are translated, but error messages that come from the API and the form validation messages are English only.
 - Placeholder artwork is generated SVG; the CJK glyphs in the tiles rely on system fonts
   (Windows, macOS, Android and iOS all include suitable ones).
 - No password reset or email verification (there is no email service by design).

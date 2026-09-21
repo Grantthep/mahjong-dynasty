@@ -200,9 +200,16 @@ export class GameBoard {
   }
 
   /** Old tiles fall away. */
-  async dropOut(): Promise<void> {
+  dropOut(): Promise<void> {
+    return this.dropOutReels(Array.from({ length: COLS }, (_, col) => col));
+  }
+
+  /** Only the tiles of the given reels fall away (the other reels stay untouched). */
+  async dropOutReels(reels: readonly number[]): Promise<void> {
     const leaving: Promise<void>[] = [];
-    this.tiles.forEach((column, col) =>
+    const chosen = new Set(reels);
+    this.tiles.forEach((column, col) => {
+      if (!chosen.has(col)) return;
       column.forEach((tile, row) => {
         if (!tile) return;
         leaving.push(
@@ -215,20 +222,30 @@ export class GameBoard {
             ease: 'Cubic.easeIn',
           }).then(() => tile.destroy()),
         );
-      }),
-    );
-    this.tiles = Array.from({ length: COLS }, () => Array<MahjongTile | null>(ROWS).fill(null));
+        column[row] = null;
+      });
+    });
     await Promise.all(leaving);
   }
 
   /** New board drops in column by column. */
-  async dropIn(board: Board): Promise<void> {
+  dropIn(board: Board): Promise<void> {
+    return this.dropInReels(
+      board,
+      board.map((_, col) => col),
+    );
+  }
+
+  /** New tiles drop into the given reels only, one reel after the other. */
+  async dropInReels(board: Board, reels: readonly number[]): Promise<void> {
     const landing: Promise<void>[] = [];
-    board.forEach((column, col) => {
+    reels.forEach((col, position) => {
+      const column = board[col];
+      if (!column) return;
       for (let row = ROWS - 1; row >= 0; row--) {
         const symbol = column[row]!;
         const tile = this.createTile(col, row, symbol, tileY(row) - BOARD_H - 70);
-        const order = col * TIMING.colStagger + (ROWS - 1 - row) * TIMING.rowStagger;
+        const order = position * TIMING.colStagger + (ROWS - 1 - row) * TIMING.rowStagger;
         landing.push(
           this.land(tile, tileY(row), TIMING.dropIn + row * 25, order, row === ROWS - 1),
         );

@@ -104,6 +104,9 @@ export const en = {
   'win.freeTotal': 'Total won during Free Spins',
   'win.continue': 'Click to continue',
   'wild.reelBanner': 'WILD REEL RESPIN',
+  'canvas.freeSpins': 'FREE SPINS',
+  'canvas.awarded': '{count} AWARDED',
+  'canvas.retrigger': '+{count} AWARDED',
 
   // settings
   'settings.title': 'Settings',
@@ -281,6 +284,9 @@ export const zh: Translations = {
   'win.freeTotal': '免费旋转期间总赢取',
   'win.continue': '点击继续',
   'wild.reelBanner': '百搭卷轴重转',
+  'canvas.freeSpins': '免费旋转',
+  'canvas.awarded': '获得 {count} 次',
+  'canvas.retrigger': '再获得 {count} 次',
 
   'settings.title': '设置',
   'settings.close': '关闭设置',

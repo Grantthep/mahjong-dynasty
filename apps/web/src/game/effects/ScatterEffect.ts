@@ -9,6 +9,8 @@ export interface ScatterHooks {
   onDim(on: boolean): void;
   /** Called at the moment the banner appears: the palace transforms into its Free Spins look. */
   onEnterFreeSpins(): void;
+  /** Canvas text in the player's language. */
+  labels: { freeSpins: string; awarded: (spins: number, retrigger: boolean) => string };
 }
 
 /** Lotus Scatters glow, golden particles gather in the centre and FREE SPINS is announced. */
@@ -91,7 +93,7 @@ export class ScatterEffect {
       .lineBetween(-250, -54, 250, -54)
       .lineBetween(-250, 70, 250, 70);
     const heading = scene.add
-      .text(0, -10, 'FREE SPINS', {
+      .text(0, -10, hooks.labels.freeSpins, {
         fontFamily: FONT_DISPLAY,
         fontSize: '68px',
         fontStyle: 'bold',
@@ -102,7 +104,7 @@ export class ScatterEffect {
       .setOrigin(0.5)
       .setShadow(0, 0, CSS_COLOR.gold, 22, true, true);
     const sub = scene.add
-      .text(0, 46, retrigger ? `+${spins} AWARDED` : `${spins} AWARDED`, {
+      .text(0, 46, hooks.labels.awarded(spins, retrigger), {
         fontFamily: FONT_DISPLAY,
         fontSize: '30px',
         fontStyle: '600',

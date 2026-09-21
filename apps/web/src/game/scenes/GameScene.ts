@@ -4,7 +4,8 @@ import { delay } from '../animations/tweens';
 import type { AudioManager } from '../audio/AudioManager';
 import { GAME_H, GAME_W, METER_Y, MULTIPLIER_Y, TIMING } from '../config';
 import { DragonEffect } from '../effects/DragonEffect';
-import { ScatterEffect } from '../effects/ScatterEffect';
+import { ScatterEffect, type ScatterHooks } from '../effects/ScatterEffect';
+import { WildReelEffect } from '../effects/WildReelEffect';
 import { WinEffect } from '../effects/WinEffect';
 import { DragonMeter } from '../objects/DragonMeter';
 import { FloatingWinText } from '../objects/FloatingWinText';
@@ -22,10 +23,10 @@ export interface GameInit {
 }
 
 /** Callbacks from the scene back into React (HUD, palace background, dimming). */
-export interface SpinHooks {
+export interface SpinHooks extends Omit<ScatterHooks, 'labels'> {
   onWin(runningTotal: number): void;
-  onDim(on: boolean): void;
-  onEnterFreeSpins(): void;
+  /** Canvas text in the player's language. */
+  labels: ScatterHooks['labels'] & { wildReel: string };
 }
 
 /**
@@ -39,6 +40,7 @@ export class GameScene extends Phaser.Scene {
   private winEffect!: WinEffect;
   private dragonEffect!: DragonEffect;
   private scatterEffect!: ScatterEffect;
+  private wildReelEffect!: WildReelEffect;
   private audio!: AudioManager;
   private playing = false;
   private baseSpeed = 1;
@@ -62,6 +64,7 @@ export class GameScene extends Phaser.Scene {
     this.winEffect = new WinEffect(this);
     this.dragonEffect = new DragonEffect(this, this.board, this.meter, this.audio, this.winEffect);
     this.scatterEffect = new ScatterEffect(this, this.board, this.audio);
+    this.wildReelEffect = new WildReelEffect(this, this.board, this.audio, this.winEffect);
 
     this.game.events.emit(READY_EVENT, this);
   }
@@ -113,6 +116,11 @@ export class GameScene extends Phaser.Scene {
       await this.board.dropOut();
       await this.board.dropIn(result.initialBoard);
       await delay(this, 180);
+
+      // A Wild on the first board can lock its reel; the other reels respin (server's result).
+      if (result.wildReelRespin) {
+        await this.wildReelEffect.play(result.wildReelRespin, hooks.labels.wildReel);
+      }
 
       for (const step of result.cascades) {
         // Multiplier for this cascade (×1 ↓ ×2 ↓ ×3 ...).

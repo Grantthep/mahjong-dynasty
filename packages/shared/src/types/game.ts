@@ -64,6 +64,14 @@ export interface CascadeStep {
   dragonFortune: DragonFortuneEvent | null;
 }
 
+/** A locked Wild reel: these reels turn fully Wild while the other reels respin once. */
+export interface WildReelRespin {
+  /** Reels (columns) locked as Wilds. */
+  reels: number[];
+  /** Board after the respin; the first cascade is evaluated on it. */
+  board: Board;
+}
+
 /** Free Spin / Dragon Fortune state persisted server-side. */
 export interface SessionSnapshot {
   dragonMeter: number;
@@ -80,6 +88,8 @@ export interface SpinOutcome {
   /** 1-based position within the current free-spin round (0 for a paid spin). */
   freeSpinIndex: number;
   initialBoard: Board;
+  /** Set when a Wild reel locked and the other reels respun (absent on spins stored before this feature). */
+  wildReelRespin?: WildReelRespin | null;
   cascades: CascadeStep[];
   finalBoard: Board;
   totalWin: number;
