@@ -62,7 +62,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - Registration, login, logout (bcrypt + JWT in an **HttpOnly** cookie), protected routes
 - Profile with lifetime stats and recent spins; spin history endpoint
 - Idempotent, transaction-safe spins (double clicks and concurrent requests cannot double-charge)
-- **Auto spin** with PAUSE / RESUME and STOP AUTO; it stops by itself on an error or when the balance can't cover the bet
+- **Auto spin**: one button starts and stops it (choose 10 / 25 / 50 / 100 / until stopped); it also stops by itself on an error or when the balance can't cover the bet
 - **Turbo** (faster animations), **Skip** (fast-forward the spin being shown; Space bar while spinning), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
 - **Paytable** in the game (gear-menu or table button) and on the About page, showing the credits paid per way at the bet you pick
 - **English / Chinese (中文)** language switch on every page; the choice is remembered (translations live in `apps/web/src/i18n/translations.ts`)
@@ -456,7 +456,7 @@ Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-dr
 
 - **Demo maths only** – tuned by simulation, not certified; return varies slightly with bet size
   because winnings are whole credits.
-- Free Spins are auto-played one after another (Pause, Turbo and Skip apply to them too).
+- Free Spins are auto-played one after another (Turbo and Skip apply to them too).
 - Canvas text (FREE SPINS banner etc.) and page text are translated, but error messages that come from the API and the form validation messages are English only.
 - Placeholder artwork is generated SVG; the CJK glyphs in the tiles rely on system fonts
   (Windows, macOS, Android and iOS all include suitable ones).

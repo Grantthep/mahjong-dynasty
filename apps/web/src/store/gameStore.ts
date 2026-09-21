@@ -3,9 +3,6 @@ import { DEFAULT_BET, type SessionSnapshot } from '@mahjong/shared';
 
 export type GamePhase = 'loading' | 'idle' | 'spinning';
 export type GameMode = 'base' | 'free';
-/** Auto spin: `paused` keeps the session but holds back every automatic spin until resumed. */
-export type AutoMode = 'off' | 'running' | 'paused';
-
 /** Auto spin counts offered in the HUD; `null` means "until stopped". */
 export const AUTO_SPIN_OPTIONS: readonly (number | null)[] = [10, 25, 50, 100, null];
 
@@ -90,7 +87,8 @@ interface GameUiState extends SoundSettings, PlaySettings {
   win: number;
   session: SessionSnapshot;
   error: string | null;
-  auto: AutoMode;
+  /** Auto spin is running (one button starts and stops it). */
+  auto: boolean;
   /** Auto spins still to play in this run (`null` = unlimited). */
   autoLeft: number | null;
 
@@ -102,7 +100,7 @@ interface GameUiState extends SoundSettings, PlaySettings {
   setWin: (win: number) => void;
   setSession: (session: SessionSnapshot) => void;
   setError: (error: string | null) => void;
-  setAuto: (auto: AutoMode) => void;
+  setAuto: (auto: boolean) => void;
   setAutoLeft: (left: number | null) => void;
   setAutoLimit: (limit: number | null) => void;
   setTurbo: (turbo: boolean) => void;
@@ -141,7 +139,7 @@ export const useGameStore = create<GameUiState>((set, get) => {
     win: 0,
     session: EMPTY_SESSION,
     error: null,
-    auto: 'off',
+    auto: false,
     autoLeft: null,
 
     hydrate: ({ balance, session, defaultBet }) =>

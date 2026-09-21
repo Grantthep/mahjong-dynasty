@@ -1,7 +1,7 @@
 import { useT } from '../i18n';
 import { formatCredits } from '../utils/format';
 import { BetButton, BetValue } from './BetControls';
-import { AUTO_SPIN_OPTIONS, type AutoMode } from '../store/gameStore';
+import { AUTO_SPIN_OPTIONS } from '../store/gameStore';
 import { SpinButton } from './SpinButton';
 import styles from './HUD.module.css';
 
@@ -15,12 +15,9 @@ export interface HUDProps {
   freeSpins?: { remaining: number; total: number } | null;
   onBetChange: (bet: number) => void;
   onSpin: () => void;
-  /** Auto spin state; omit the handlers to hide the auto controls. */
-  auto?: AutoMode;
-  onAutoStart?: () => void;
-  onAutoStop?: () => void;
-  onAutoPause?: () => void;
-  onAutoResume?: () => void;
+  /** Auto spin is running. One button starts and stops it; omit the handler to hide it. */
+  auto?: boolean;
+  onAutoToggle?: () => void;
   /** Auto spins to play (`null` = until stopped) and how many are left in the current run. */
   autoLimit?: number | null;
   autoLeft?: number | null;
@@ -41,11 +38,8 @@ export function HUD({
   freeSpins,
   onBetChange,
   onSpin,
-  auto = 'off',
-  onAutoStart,
-  onAutoStop,
-  onAutoPause,
-  onAutoResume,
+  auto = false,
+  onAutoToggle,
   autoLimit = null,
   autoLeft = null,
   onAutoLimitChange,
@@ -57,9 +51,8 @@ export function HUD({
   const inFreeSpins = Boolean(freeSpins && freeSpins.remaining > 0);
   const cannotAfford = !inFreeSpins && balance < bet;
   const betLocked = spinning || inFreeSpins;
-  const autoOn = auto !== 'off';
-  const paused = auto === 'paused';
-  const showAuto = Boolean(onAutoStart && onAutoStop);
+  const autoOn = auto;
+  const showAuto = Boolean(onAutoToggle);
   const showSkip = Boolean(onSkip) && spinning;
 
   return (
@@ -130,19 +123,10 @@ export function HUD({
             className={`${styles.autoButton} ${autoOn ? styles.autoActive : ''}`}
             aria-pressed={autoOn}
             disabled={!autoOn && cannotAfford}
-            onClick={autoOn ? onAutoStop : onAutoStart}
+            onClick={onAutoToggle}
           >
             {autoOn ? t('hud.stopAuto') : t('hud.autoSpin')}
           </button>
-          {autoOn ? (
-            <button
-              type="button"
-              className={`${styles.autoButton} ${paused ? styles.autoPaused : ''}`}
-              onClick={paused ? onAutoResume : onAutoPause}
-            >
-              {paused ? t('hud.resume') : t('hud.pause')}
-            </button>
-          ) : null}
           {onTurboChange ? (
             <button
               type="button"
@@ -164,7 +148,7 @@ export function HUD({
       <div className={styles.notice} role="status" aria-live="polite">
         {autoOn ? (
           <span className={styles.freeBadge}>
-            {paused ? t('hud.autoPaused') : t('hud.autoOn')}
+            {t('hud.autoOn')}
             {autoLeft !== null ? <small> · {t('hud.left', { count: autoLeft })}</small> : null}
             {inFreeSpins && freeSpins ? (
               <small> · {t('hud.freeLeft', { count: freeSpins.remaining })}</small>

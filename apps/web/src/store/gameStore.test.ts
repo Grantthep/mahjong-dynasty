@@ -28,7 +28,7 @@ describe('gameStore play and sound settings', () => {
 
   it('starts auto spin off with no spins counted', () => {
     const { auto, autoLeft } = useGameStore.getState();
-    expect(auto).toBe('off');
+    expect(auto).toBe(false);
     expect(autoLeft).toBeNull();
   });
 });

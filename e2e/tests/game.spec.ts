@@ -52,44 +52,32 @@ test.describe('playing the game', () => {
     expect(history.spins[0].bet).toBe(50);
   });
 
-  test('auto spin runs, pauses, resumes and stops', async ({ page }) => {
+  test('one button starts auto spin and stops it again', async ({ page }) => {
     await registerByApi(page);
     await openGame(page);
     await page.getByRole('button', { name: 'TURBO' }).click();
+    const spinCount = async () =>
+      (await (await page.request.get('/api/game/history?limit=50')).json()).spins.length as number;
+
+    // There is no separate pause / resume control any more.
+    await expect(page.getByRole('button', { name: 'PAUSE' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'RESUME' })).toHaveCount(0);
 
     await page.getByRole('combobox', { name: 'Number of auto spins' }).selectOption('25');
     await page.getByRole('button', { name: 'AUTO SPIN' }).click();
     await expect(hudStatus(page)).toContainText('AUTO SPIN ON');
     await expect(hudStatus(page)).toContainText('left');
 
-    // Pause: the current spin finishes and then nothing else is played.
-    await page.getByRole('button', { name: 'PAUSE' }).click();
-    await expect(hudStatus(page)).toContainText('AUTO SPIN PAUSED');
-    await waitForSpinToFinish(page);
-    const spinsWhenPaused = (await (await page.request.get('/api/game/history?limit=50')).json())
-      .spins.length;
-    await page.waitForTimeout(2500);
-    const spinsLater = (await (await page.request.get('/api/game/history?limit=50')).json()).spins
-      .length;
-    expect(spinsLater).toBe(spinsWhenPaused);
+    // It keeps spinning by itself.
+    await expect.poll(spinCount, { timeout: 45_000 }).toBeGreaterThanOrEqual(3);
 
-    // Resume: spinning continues by itself.
-    await page.getByRole('button', { name: 'RESUME' }).click();
-    await expect(hudStatus(page)).toContainText('AUTO SPIN ON');
-    await expect
-      .poll(
-        async () =>
-          (await (await page.request.get('/api/game/history?limit=50')).json()).spins.length,
-        {
-          timeout: 45_000,
-        },
-      )
-      .toBeGreaterThan(spinsWhenPaused);
-
-    // Stop.
+    // The same button stops it: the current spin finishes and nothing else is played.
     await page.getByRole('button', { name: 'STOP AUTO' }).click();
     await expect(page.getByRole('button', { name: 'AUTO SPIN' })).toBeVisible();
     await waitForSpinToFinish(page);
+    const whenStopped = await spinCount();
+    await page.waitForTimeout(2500);
+    expect(await spinCount()).toBe(whenStopped);
   });
 });
 

@@ -189,10 +189,6 @@
   border-color: var(--gold-light);
   box-shadow: 0 0 14px rgba(242, 210, 124, 0.5);
 }
-.autoPaused {
-  color: var(--ivory);
-  border-color: var(--ivory);
-}
 
 .notice {
   min-height: 1.3em;
