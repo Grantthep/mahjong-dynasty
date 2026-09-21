@@ -19,22 +19,27 @@ export const uniqueSuffix = () => randomUUID().replace(/-/g, '').slice(0, 10);
 export interface TestUser {
   agent: ReturnType<typeof request.agent>;
   id: string;
-  email: string;
   username: string;
-  password: string;
+  /** The "mjd_token=..." cookie, to act as a second browser of the same guest. */
+  cookie: string;
 }
 
-/** Registers a brand-new user; the returned agent carries the auth cookie. */
-export async function registerUser(ctx: TestContext): Promise<TestUser> {
-  const suffix = uniqueSuffix();
-  const email = `player_${suffix}@example.com`;
-  const username = `player_${suffix}`;
-  const password = 'CorrectHorse42';
+/** Creates a brand-new guest player; the returned agent carries the auth cookie. */
+export async function createGuest(ctx: TestContext): Promise<TestUser> {
   const agent = request.agent(ctx.app);
-  const res = await agent.post('/api/auth/register').send({ email, username, password });
+  const res = await agent.post('/api/auth/guest');
   if (res.status !== 201)
-    throw new Error(`register failed: ${res.status} ${JSON.stringify(res.body)}`);
-  return { agent, id: res.body.user.id as string, email, username, password };
+    throw new Error(`guest failed: ${res.status} ${JSON.stringify(res.body)}`);
+  const cookie = (res.headers['set-cookie'] as unknown as string[])
+    .map((line) => line.split(';')[0]!)
+    .find((pair) => pair.startsWith('mjd_token='));
+  if (!cookie) throw new Error('no auth cookie was set');
+  return {
+    agent,
+    id: res.body.user.id as string,
+    username: res.body.user.username as string,
+    cookie,
+  };
 }
 
 export const spinBody = (bet = 20, requestId: string = randomUUID()) => ({ bet, requestId });

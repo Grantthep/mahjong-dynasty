@@ -1,39 +1,34 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { GuestGate } from './components/GuestGate';
 import { LoadingScreen } from './components/StatusScreens';
 import AboutPage from './pages/AboutPage';
-import AdminPage from './pages/AdminPage';
-import LandingPage from './pages/LandingPage';
 import LeaderboardPage from './pages/LeaderboardPage';
-import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProfilePage from './pages/ProfilePage';
-import RegisterPage from './pages/RegisterPage';
 
-// Phaser is large: load the game page (and Phaser) only when a player enters the game.
+// Phaser is large: load the game page (and Phaser) only when it is needed.
 const GamePage = lazy(() => import('./pages/GamePage'));
 
+/** The site opens straight into the game. There is no landing, sign-up or log-in page. */
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
       <Route path="/about" element={<AboutPage />} />
-      <Route element={<ProtectedRoute />}>
+      <Route element={<GuestGate />}>
         <Route
-          path="/game"
+          path="/"
           element={
-            <Suspense fallback={<LoadingScreen label="Entering the palace…" />}>
+            <Suspense fallback={<LoadingScreen />}>
               <GamePage />
             </Suspense>
           }
         />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/admin" element={<AdminPage />} />
       </Route>
+      {/* The game used to live at /game. */}
+      <Route path="/game" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

@@ -16,9 +16,6 @@ interface Props {
   onMusicVolumeChange: (volume: number) => void;
   onSfxVolumeChange: (volume: number) => void;
   onOpenPaytable?: () => void;
-  /** Shows the admin dashboard link. */
-  isAdmin?: boolean;
-  onLogout: () => void;
 }
 
 export function SettingsPanel({
@@ -34,8 +31,6 @@ export function SettingsPanel({
   onMusicVolumeChange,
   onSfxVolumeChange,
   onOpenPaytable,
-  isAdmin = false,
-  onLogout,
 }: Props) {
   const t = useT();
   if (!open) return null;
@@ -110,12 +105,7 @@ export function SettingsPanel({
           ) : null}
           <Link to="/profile">{t('settings.profile')}</Link>
           <Link to="/leaderboard">{t('nav.leaderboard')}</Link>
-          {isAdmin ? <Link to="/admin">{t('nav.admin')}</Link> : null}
           <Link to="/about">{t('settings.about')}</Link>
-          <Link to="/">{t('common.home')}</Link>
-          <button type="button" className={styles.logout} onClick={onLogout}>
-            {t('common.logOut')}
-          </button>
         </nav>
 
         <p className={styles.note}>{t('settings.note')}</p>

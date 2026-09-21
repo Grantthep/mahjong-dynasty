@@ -1,13 +1,10 @@
 import type { SpinHistoryItem } from './game';
 
-export type UserRole = 'PLAYER' | 'ADMIN';
-
+/** A player. Players are anonymous guests: there is no email or password. */
 export interface UserDTO {
   id: string;
-  email: string;
   username: string;
   demoBalance: number;
-  role: UserRole;
   createdAt: string;
 }
 

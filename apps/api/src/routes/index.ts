@@ -1,11 +1,5 @@
 import { Router, type RequestHandler } from 'express';
-import {
-  loginSchema,
-  registerSchema,
-  spinRequestSchema,
-  historyQuerySchema,
-  leaderboardQuerySchema,
-} from '@mahjong/shared';
+import { spinRequestSchema, historyQuerySchema, leaderboardQuerySchema } from '@mahjong/shared';
 import type { HealthResponse } from '@mahjong/shared';
 import type { createAuthController } from '../controllers/auth.controller';
 import type { createGameController } from '../controllers/game.controller';
@@ -20,7 +14,6 @@ export interface RouterDeps {
   profileController: ReturnType<typeof createProfileController>;
   statsController: ReturnType<typeof createStatsController>;
   requireAuth: RequestHandler;
-  requireAdmin: RequestHandler;
   limiters: RateLimiters;
 }
 
@@ -31,7 +24,6 @@ export function createApiRouter(deps: RouterDeps): Router {
     profileController,
     statsController,
     requireAuth,
-    requireAdmin,
     limiters,
   } = deps;
   const router = Router();
@@ -44,15 +36,8 @@ export function createApiRouter(deps: RouterDeps): Router {
     } satisfies HealthResponse);
   });
 
-  // --- auth ---
-  router.post(
-    '/auth/register',
-    limiters.auth,
-    validateBody(registerSchema),
-    authController.register,
-  );
-  router.post('/auth/login', limiters.auth, validateBody(loginSchema), authController.login);
-  router.post('/auth/logout', authController.logout);
+  // --- auth: anonymous guest players (no sign-up, no log-in) ---
+  router.post('/auth/guest', authController.resumeGuest, limiters.auth, authController.createGuest);
   router.get('/auth/me', requireAuth, authController.me);
 
   // --- game ---
@@ -82,9 +67,6 @@ export function createApiRouter(deps: RouterDeps): Router {
     validateQuery(leaderboardQuerySchema),
     statsController.getLeaderboard,
   );
-
-  // --- admin ---
-  router.get('/admin/analytics', requireAuth, requireAdmin, statsController.getAnalytics);
 
   return router;
 }

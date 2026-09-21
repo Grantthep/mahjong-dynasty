@@ -1,13 +1,10 @@
 import type {
-  AdminAnalyticsResponse,
   AuthResponse,
   GameStateResponse,
   LeaderboardPeriod,
   LeaderboardResponse,
-  LoginInput,
   ProfileResponse,
   PublicGameConfig,
-  RegisterInput,
   SpinHistoryResponse,
   SpinRequest,
   SpinResponse,
@@ -15,11 +12,8 @@ import type {
 import { apiFetch } from './client';
 
 export const authApi = {
-  register: (input: RegisterInput) =>
-    apiFetch<AuthResponse>('/api/auth/register', { method: 'POST', body: input }),
-  login: (input: LoginInput) =>
-    apiFetch<AuthResponse>('/api/auth/login', { method: 'POST', body: input }),
-  logout: () => apiFetch<void>('/api/auth/logout', { method: 'POST' }),
+  /** Returns this browser's guest player, creating one on the very first visit. */
+  guest: () => apiFetch<AuthResponse>('/api/auth/guest', { method: 'POST' }),
   me: () => apiFetch<AuthResponse>('/api/auth/me'),
 };
 
@@ -34,10 +28,6 @@ export const gameApi = {
 export const leaderboardApi = {
   get: (period: LeaderboardPeriod, limit = 20) =>
     apiFetch<LeaderboardResponse>(`/api/leaderboard?period=${period}&limit=${limit}`),
-};
-
-export const adminApi = {
-  analytics: () => apiFetch<AdminAnalyticsResponse>('/api/admin/analytics'),
 };
 
 export const profileApi = {

@@ -11,29 +11,13 @@ export const en = {
   'common.demoFooter':
     'Virtual DEMO CREDITS only · no deposits, withdrawals, payments or real-money wagering',
   'common.loading': 'Loading…',
-  'common.home': 'Home',
-  'common.enterGame': 'Enter game',
   'common.backToGame': 'Back to game',
-  'common.logOut': 'Log out',
-  'common.logIn': 'Log in',
-  'common.register': 'Register',
-  'common.about': 'About',
   'common.demoCredits': 'DEMO CREDITS',
   'common.homeLink': 'Mahjong Dynasty home',
   'common.close': 'Close',
   'common.demoDisclaimer':
     'This game uses virtual DEMO CREDITS only. There are no deposits, withdrawals, payments or real-money wagering.',
   'common.notCertified': 'FOR DEVELOPMENT / DEMONSTRATION ONLY. NOT CERTIFIED GAME MATH.',
-
-  // landing
-  'landing.tagline': 'A mystical Mahjong adventure awaits.',
-  'landing.enter': 'Enter Game',
-  'landing.footer':
-    'DEMO MODE · virtual DEMO CREDITS only · no deposits, withdrawals, payments or real-money wagering',
-  'landing.feature.cascade': 'CASCADING WINS',
-  'landing.feature.dragon': 'DRAGON FORTUNE',
-  'landing.feature.wilds': 'GOLDEN WILDS',
-  'landing.feature.free': 'FREE SPINS',
 
   // status screens
   'status.enterPalace': 'Entering the palace…',
@@ -44,22 +28,6 @@ export const en = {
   'status.loadFailed': 'Could not load the game.',
   'status.startFailed': 'The game could not start.',
   'status.unexpected': 'Unexpected error. Please try again.',
-
-  // auth
-  'auth.welcomeBack': 'Welcome back',
-  'auth.loginLead': 'Log in to enter the palace.',
-  'auth.email': 'Email',
-  'auth.password': 'Password',
-  'auth.username': 'Username',
-  'auth.loggingIn': 'Logging in…',
-  'auth.newHere': 'New here?',
-  'auth.createFree': 'Create a free demo account',
-  'auth.seeded': 'Seeded demo account:',
-  'auth.createAccount': 'Create your account',
-  'auth.registerLead': 'Start with 10,000 DEMO CREDITS. No payment needed, ever.',
-  'auth.creating': 'Creating account…',
-  'auth.createButton': 'Create account',
-  'auth.already': 'Already registered?',
 
   // not found
   'notFound.title': 'Lost in the palace',
@@ -173,7 +141,6 @@ export const en = {
 
   // navigation
   'nav.leaderboard': 'Leaderboard',
-  'nav.admin': 'Admin dashboard',
 
   // leaderboard
   'leaderboard.title': 'Top demo wins',
@@ -192,34 +159,6 @@ export const en = {
   'leaderboard.free': 'FREE SPIN',
   'leaderboard.empty': 'No wins yet. Be the first!',
   'leaderboard.failed': 'Could not load the leaderboard.',
-
-  // admin dashboard
-  'admin.title': 'Admin dashboard',
-  'admin.lead': 'Totals across all players. Demo credits only; no emails or balances are shown.',
-  'admin.denied': 'Administrator access required.',
-  'admin.return': 'Observed return',
-  'admin.returnNote': 'Credits won ÷ credits bet over every spin. Not certified game math.',
-  'admin.players': 'Players',
-  'admin.newPlayers': 'New players (7 days)',
-  'admin.spins': 'Total spins',
-  'admin.freeSpins': 'Free Spins played',
-  'admin.bet': 'Credits bet',
-  'admin.won': 'Credits won',
-  'admin.largest': 'Largest win',
-  'admin.freeTriggers': 'Free Spins triggered',
-  'admin.dragon': 'Dragon Fortune triggers',
-  'admin.respins': 'Wild Reel Respins',
-  'admin.chartTitle': 'Spins per day',
-  'admin.chartNote': 'Last 14 days (UTC).',
-  'admin.chartTip': '{date}: {count} spins',
-  'admin.tableView': 'Daily figures',
-  'admin.day': 'Day (UTC)',
-  'admin.colSpins': 'Spins',
-  'admin.colBet': 'Bet',
-  'admin.colWon': 'Won',
-  'admin.colReturn': 'Return',
-  'admin.top': 'Top players by credits won',
-  'admin.generated': 'Updated {time}',
 
   // symbols
   'symbol.circle': 'Circle',
@@ -245,26 +184,12 @@ export const zh: Translations = {
   'common.demoMode': '演示模式',
   'common.demoFooter': '仅限虚拟演示积分 · 无充值、提现、支付或真钱投注',
   'common.loading': '加载中…',
-  'common.home': '首页',
-  'common.enterGame': '进入游戏',
   'common.backToGame': '返回游戏',
-  'common.logOut': '退出登录',
-  'common.logIn': '登录',
-  'common.register': '注册',
-  'common.about': '关于',
   'common.demoCredits': '演示积分',
   'common.homeLink': '麻将王朝首页',
   'common.close': '关闭',
   'common.demoDisclaimer': '本游戏仅使用虚拟演示积分，不涉及充值、提现、支付或真钱投注。',
   'common.notCertified': '仅供开发与演示使用，游戏数学模型未经认证。',
-
-  'landing.tagline': '一场神秘的麻将冒险正等着你。',
-  'landing.enter': '进入游戏',
-  'landing.footer': '演示模式 · 仅限虚拟演示积分 · 无充值、提现、支付或真钱投注',
-  'landing.feature.cascade': '连锁消除',
-  'landing.feature.dragon': '龙运',
-  'landing.feature.wilds': '黄金百搭',
-  'landing.feature.free': '免费旋转',
 
   'status.enterPalace': '正在进入宫殿…',
   'status.preparing': '正在准备宫殿…',
@@ -274,21 +199,6 @@ export const zh: Translations = {
   'status.loadFailed': '无法加载游戏。',
   'status.startFailed': '游戏无法启动。',
   'status.unexpected': '发生意外错误，请重试。',
-
-  'auth.welcomeBack': '欢迎回来',
-  'auth.loginLead': '登录后进入宫殿。',
-  'auth.email': '邮箱',
-  'auth.password': '密码',
-  'auth.username': '用户名',
-  'auth.loggingIn': '登录中…',
-  'auth.newHere': '第一次来？',
-  'auth.createFree': '创建免费演示账号',
-  'auth.seeded': '预置演示账号：',
-  'auth.createAccount': '创建账号',
-  'auth.registerLead': '赠送 10,000 演示积分，永远无需付款。',
-  'auth.creating': '正在创建账号…',
-  'auth.createButton': '创建账号',
-  'auth.already': '已有账号？',
 
   'notFound.title': '迷失在宫殿中',
   'notFound.lead': '此页面不存在。',
@@ -393,7 +303,6 @@ export const zh: Translations = {
 
   // navigation
   'nav.leaderboard': '排行榜',
-  'nav.admin': '管理后台',
 
   // leaderboard
   'leaderboard.title': '演示大奖榜',
@@ -411,34 +320,6 @@ export const zh: Translations = {
   'leaderboard.free': '免费旋转',
   'leaderboard.empty': '还没有人赢取，快来抢第一！',
   'leaderboard.failed': '无法加载排行榜。',
-
-  // admin dashboard
-  'admin.title': '管理后台',
-  'admin.lead': '所有玩家的汇总数据。仅限演示积分，不显示邮箱或余额。',
-  'admin.denied': '需要管理员权限。',
-  'admin.return': '实测返还率',
-  'admin.returnNote': '所有旋转的赢取积分 ÷ 投注积分。游戏数学模型未经认证。',
-  'admin.players': '玩家数',
-  'admin.newPlayers': '新玩家（7 天）',
-  'admin.spins': '总旋转次数',
-  'admin.freeSpins': '免费旋转次数',
-  'admin.bet': '投注积分',
-  'admin.won': '赢取积分',
-  'admin.largest': '最大单次赢取',
-  'admin.freeTriggers': '触发免费旋转次数',
-  'admin.dragon': '触发龙运次数',
-  'admin.respins': '百搭卷轴重转次数',
-  'admin.chartTitle': '每日旋转次数',
-  'admin.chartNote': '最近 14 天（UTC）。',
-  'admin.chartTip': '{date}：{count} 次旋转',
-  'admin.tableView': '每日数据',
-  'admin.day': '日期（UTC）',
-  'admin.colSpins': '旋转',
-  'admin.colBet': '投注',
-  'admin.colWon': '赢取',
-  'admin.colReturn': '返还率',
-  'admin.top': '赢取积分最多的玩家',
-  'admin.generated': '更新于 {time}',
 
   'symbol.circle': '筒子',
   'symbol.bamboo': '条子',

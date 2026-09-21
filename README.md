@@ -8,9 +8,9 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 > This project uses virtual demo credits only and does not implement deposits, withdrawals,
 > payment processing, or real-money wagering.
 
-| Landing                                       | Game (6 × 4 board)                        |
-| --------------------------------------------- | ----------------------------------------- |
-| ![Landing page](docs/screenshots/landing.png) | ![Game screen](docs/screenshots/game.png) |
+| Game (6 × 4 board)                        |
+| ----------------------------------------- |
+| ![Game screen](docs/screenshots/game.png) |
 
 | Dragon Fortune (signature moment)                      | Free Spins                                     |
 | ------------------------------------------------------ | ---------------------------------------------- |
@@ -27,7 +27,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 5. [Directory structure](#directory-structure)
 6. [Frontend](#frontend) · [Backend](#backend) · [Game engine](#game-engine) · [Database](#database) · [API](#api) · [Security](#security)
 7. [Installation (Windows)](#installation-windows)
-8. [Docker / PostgreSQL](#docker--postgresql) · [Environment](#environment) · [Migration & seed](#database-migration--seed)
+8. [Docker / PostgreSQL](#docker--postgresql) · [Environment](#environment) · [Database migration](#database-migration)
 9. [Running the project](#running-the-project) · [Testing](#testing) · [Simulation](#simulation) · [Building](#building)
 10. [Git workflow](#git-workflow) · [Asset guide](#asset-guide) · [Replacing artwork](#replacing-artwork) · [Replacing audio](#replacing-audio)
 11. [Known limitations](#known-limitations) · [Future improvements](#future-improvements)
@@ -56,10 +56,9 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **Golden Dragon Wild** and **Lotus Scatter** (3 / 4 / 5+ Lotus = 8 / 12 / 15 Free Spins, retriggers supported)
 - **Wild Reel Respin** – when a Golden Wild lands on the first board it can lock its whole reel as Wilds while the other reels respin once (chance set in `gameConfig.ts`, decided by the server)
 - **Leaderboard** of the biggest single-spin demo wins (all time / last 24 hours, usernames only)
-- **Admin dashboard** (admin role): observed return, player and spin totals, feature counts, a 14-day spins chart with a table view, and top players
 - **Free Spins** stored server-side – refreshing the browser never loses them; the palace transforms into a warm red/gold atmosphere
 - BIG / MEGA / EPIC WIN presentation with count-up (only for large wins)
-- Registration, login, logout (bcrypt + JWT in an **HttpOnly** cookie), protected routes
+- **No sign-up and no log-in**: the site opens straight into the game and the server gives each browser an anonymous **guest player** (like `Guest4821`, 10,000 demo credits) remembered in an **HttpOnly** cookie. Balance, Free Spins and history stay on the server
 - Profile with lifetime stats and recent spins; spin history endpoint
 - Idempotent, transaction-safe spins (double clicks and concurrent requests cannot double-charge)
 - **Auto spin**: one button starts and stops it (choose 10 / 25 / 50 / 100 / until stopped); it also stops by itself on an error or when the balance can't cover the bet
@@ -73,14 +72,14 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 
 ## Technology stack
 
-| Area      | Technology                                                                                               |
-| --------- | -------------------------------------------------------------------------------------------------------- |
-| Monorepo  | npm workspaces                                                                                           |
-| Frontend  | React 19, TypeScript, Vite 7, **Phaser 3**, React Router, TanStack Query, Zustand, Zod, CSS Modules      |
-| Backend   | Node.js, TypeScript, Express 5, Prisma 6, PostgreSQL, Zod, bcrypt, JWT, Helmet, CORS, express-rate-limit |
-| Testing   | Vitest, React Testing Library, Supertest                                                                 |
-| Dev / Ops | Docker (Dockerfile + Compose), Playwright, ESLint 9, Prettier, GitHub Actions                            |
-| Fonts     | Cinzel (SIL OFL, bundled via `@fontsource`, not a paid font)                                             |
+| Area      | Technology                                                                                          |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| Monorepo  | npm workspaces                                                                                      |
+| Frontend  | React 19, TypeScript, Vite 7, **Phaser 3**, React Router, TanStack Query, Zustand, Zod, CSS Modules |
+| Backend   | Node.js, TypeScript, Express 5, Prisma 6, PostgreSQL, Zod, JWT, Helmet, CORS, express-rate-limit    |
+| Testing   | Vitest, React Testing Library, Supertest                                                            |
+| Dev / Ops | Docker (Dockerfile + Compose), Playwright, ESLint 9, Prettier, GitHub Actions                       |
+| Fonts     | Cinzel (SIL OFL, bundled via `@fontsource`, not a paid font)                                        |
 
 ## Architecture
 
@@ -121,7 +120,7 @@ mahjong-dynasty/
 │   │       ├── hooks/ layouts/ pages/ store/ styles/ types/ utils/ test/
 │   │       ├── App.tsx  main.tsx
 │   └── api/                       authoritative game server
-│       ├── prisma/                schema.prisma, migrations/, seed.ts
+│       ├── prisma/                schema.prisma, migrations/
 │       ├── src/
 │       │   ├── game/              GameEngine, BoardGenerator, WinEvaluator, CascadeEngine,
 │       │   │                      MultiplierEngine, DragonFortuneEngine, FreeSpinEngine,
@@ -137,7 +136,7 @@ mahjong-dynasty/
 
 ## Frontend
 
-- **Pages:** `/` landing · `/login` · `/register` · `/game` (protected) · `/profile` (protected) · `/about` (rules + paytable).
+- **Pages:** `/` the game · `/profile` · `/leaderboard` · `/about` (rules + paytable). Visitors are given a guest player automatically; the old `/game` address redirects to `/`.
 - The game page is lazy-loaded so Phaser (≈1.2 MB, split into its own chunk) is only downloaded when
   a player enters the game.
 - **React** owns the chrome (background, logo, HUD, overlays, settings); **Phaser** owns the board,
@@ -183,7 +182,7 @@ largest win in the hundreds of × bet.
 
 PostgreSQL + Prisma ([`schema.prisma`](apps/api/prisma/schema.prisma)):
 
-- `User` – id, email (unique), username (unique), passwordHash, `demoBalance` (default 10,000), timestamps
+- `User` – id, username (unique, like `Guest4821`), `demoBalance` (default 10,000), timestamps. No email or password: players are anonymous guests
 - `GameSession` – one per user: `dragonMeter`, `freeSpinsRemaining`, `freeSpinsTotal`, `freeSpinBet`, `freeSpinsWin`
 - `Spin` – userId, sessionId, `requestId` (idempotency key, unique per user), bet, `isFreeSpin`, totalWin,
   balanceBefore/After, freeSpinsAwarded, dragonFortuneTriggers, cascadeCount, `resultJson` (the full outcome), createdAt
@@ -192,27 +191,24 @@ Indexes: unique `(userId, requestId)`, `(userId, createdAt desc)`, `(sessionId)`
 
 ## API
 
-| Method & path                     | Auth  | Description                                                       |
-| --------------------------------- | :---: | ----------------------------------------------------------------- |
-| `POST /api/auth/register`         |   –   | Create account (10,000 demo credits), sets HttpOnly cookie        |
-| `POST /api/auth/login`            |   –   | Log in, sets HttpOnly cookie                                      |
-| `POST /api/auth/logout`           |   –   | Clears the cookie                                                 |
-| `GET  /api/auth/me`               |   ✔   | Current user                                                      |
-| `GET  /api/game/config`           |   –   | Public game config (bets, multipliers, awards, paytable)          |
-| `GET  /api/game/state`            |   ✔   | Balance, Dragon meter, Free Spins, last board                     |
-| `POST /api/game/spin`             |   ✔   | `{ bet, requestId }` → complete spin result                       |
-| `GET  /api/game/history?limit=20` |   ✔   | Recent spins                                                      |
-| `GET  /api/profile`               |   ✔   | Profile, lifetime stats, recent spins                             |
-| `GET  /api/leaderboard`           |   ✔   | Top single-spin wins (`period=all\|day`, `limit`), usernames only |
-| `GET  /api/admin/analytics`       | admin | Totals, 14-day spin series and top players (no emails/balances)   |
-| `GET  /api/health`                |   –   | Health check                                                      |
+| Method & path                     | Auth | Description                                                                                                         |
+| --------------------------------- | :--: | ------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/auth/guest`            |  –   | Returns this browser's guest player, creating one (10,000 demo credits) on the first visit; sets an HttpOnly cookie |
+| `GET  /api/auth/me`               |  ✔   | Current guest player                                                                                                |
+| `GET  /api/game/config`           |  –   | Public game config (bets, multipliers, awards, paytable)                                                            |
+| `GET  /api/game/state`            |  ✔   | Balance, Dragon meter, Free Spins, last board                                                                       |
+| `POST /api/game/spin`             |  ✔   | `{ bet, requestId }` → complete spin result                                                                         |
+| `GET  /api/game/history?limit=20` |  ✔   | Recent spins                                                                                                        |
+| `GET  /api/profile`               |  ✔   | Profile, lifetime stats, recent spins                                                                               |
+| `GET  /api/leaderboard`           |  ✔   | Top single-spin wins (`period=all\|day`, `limit`), usernames only                                                   |
+| `GET  /api/health`                |  –   | Health check                                                                                                        |
 
 Errors are always `{ "error": { "code", "message", "details?" } }`.
 
 ## Security
 
-- Passwords hashed with **bcrypt**; login always performs a hash comparison (no user-enumeration timing)
-- **JWT in an HttpOnly, SameSite=Lax cookie** (Secure in production); no tokens in JavaScript / localStorage
+- **No passwords and no personal data**: players are anonymous guests, identified by a signed **JWT in an HttpOnly, SameSite=Lax cookie** (Secure in production; kept for a year and renewed on each visit). Creating a NEW guest is rate limited per address; coming back to the site is not
+- No tokens in JavaScript / localStorage
 - **Helmet**, **CORS** limited to `WEB_ORIGIN`, **rate limiting** (global / auth / spin), 10 kB body limit
 - **Zod** validation on every input; unknown fields are stripped – the client can never supply
   balance, win, board, multiplier, Free Spins or Dragon meter
@@ -265,48 +261,30 @@ Leave that window open. Do not run A and B at the same time (both use port 5432)
 
 `.env.example` → `.env` (never commit `.env`):
 
-| Variable                     | Meaning                                                                |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| `DATABASE_URL`               | PostgreSQL connection string (default matches Docker / embedded setup) |
-| `JWT_SECRET`                 | Long random secret (≥ 32 chars in production)                          |
-| `API_PORT`                   | API port (default `4000`)                                              |
-| `WEB_ORIGIN`                 | Allowed CORS origin (default `http://localhost:5173`)                  |
-| `NODE_ENV`                   | `development` / `test` / `production`                                  |
-| `BCRYPT_ROUNDS` _(optional)_ | bcrypt cost (default 12)                                               |
-| `VITE_API_URL` _(optional)_  | Absolute API URL for the web build when not using the dev proxy        |
+| Variable                    | Meaning                                                                |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `DATABASE_URL`              | PostgreSQL connection string (default matches Docker / embedded setup) |
+| `JWT_SECRET`                | Long random secret (≥ 32 chars in production)                          |
+| `API_PORT`                  | API port (default `4000`)                                              |
+| `WEB_ORIGIN`                | Allowed CORS origin (default `http://localhost:5173`)                  |
+| `NODE_ENV`                  | `development` / `test` / `production`                                  |
+| `TRUST_PROXY` _(optional)_  | Reverse proxies in front of the API (`1` behind nginx; default `0`)    |
+| `VITE_API_URL` _(optional)_ | Absolute API URL for the web build when not using the dev proxy        |
 
-## Database migration & seed
+## Database migration
 
 ```bat
 npm run db:migrate
-npm run db:seed
 ```
 
-The seed creates (or resets) the demo account:
+There is **nothing to seed** and no demo account: opening the site makes the server create a guest
+player with 10,000 DEMO CREDITS. There is intentionally no top-up feature (this is not a wallet), so a
+guest's balance only changes by playing. Clearing the browser's site data, or using another browser or
+device, starts a new guest with a fresh 10,000.
 
-|          |                      |
-| -------- | -------------------- |
-| Email    | `demo@mahjong.local` |
-| Username | `demo_player`        |
-| Password | `Demo1234!`          |
-| Balance  | 10,000 DEMO CREDITS  |
-
-In development the seed also creates a **demo administrator** (never in production):
-
-|          |                       |
-| -------- | --------------------- |
-| Email    | `admin@mahjong.local` |
-| Username | `demo_admin`          |
-| Password | `Admin1234!`          |
-
-Log in with it and open **Settings → Admin dashboard** (or `/admin`). Run
-`npm run db:seed -- --admin-only` to create or refresh only the administrator without touching the
-demo player. Everyone who registers is a plain player; the role is stored in the database and is
-checked on every admin request. To promote someone else, set `role = 'ADMIN'` on their `User` row
-(for example with `npm run db:studio -w @mahjong/api`).
-
-Re-running `npm run db:seed` resets that account's balance, Dragon meter, Free Spins and history.
-(There is intentionally no top-up feature: this is not a wallet.)
+Older versions had sign-up, log-in and an admin dashboard. The migration `guest_players` removed the
+email, password and role columns, so those accounts can no longer be signed in to (their spins still
+count on the leaderboard).
 
 ## Running the project
 
@@ -319,8 +297,8 @@ npm run dev
 | **Game (frontend)** | http://localhost:5173                                            |
 | **API (backend)**   | http://localhost:4000 (health: http://localhost:4000/api/health) |
 
-Open the frontend in your browser, click **ENTER GAME**, log in with the demo account (or register a
-new one) and press **SPIN** (or the space bar). Use `localhost`, not `127.0.0.1` (CORS origin).
+Open the frontend in your browser: the game starts straight away with a new guest player (10,000
+DEMO CREDITS). Press **SPIN** (or the space bar). Use `localhost`, not `127.0.0.1` (CORS origin).
 
 ## Playing on a phone (same Wi-Fi)
 
@@ -331,7 +309,7 @@ npm run dev:phone       :: terminal 2, instead of "npm run dev"
 
 The script prints an address such as `http://192.168.1.110:5173`. Open it in the phone's browser while the
 phone is on the **same Wi-Fi** as the computer (not mobile data). It starts the game so that it listens on
-the network and tells the API to accept that address (a normal `npm run dev` refuses logins from
+the network and tells the API to accept that address (a normal `npm run dev` refuses requests from
 anywhere but `localhost`).
 
 - If the page does not load, Windows Firewall is probably blocking it: allow **Node.js** on **private**
@@ -340,7 +318,7 @@ anywhere but `localhost`).
 - If several addresses are listed, pick the Wi-Fi one, or force it: `set LAN_IP=192.168.1.50` then run
   the script again.
 - Sound starts after the first tap. Use **trusted home networks only**: everyone on the network can reach
-  the game, and the seeded demo accounts have well-known passwords.
+  the game (there are no passwords: anyone who can reach it can play as a guest).
 - To play away from home, deploy it (see Docker deployment) or expose it through a tunnel.
 
 ## Testing
@@ -354,11 +332,11 @@ npm run typecheck
 - **Engine unit tests** – BoardGenerator, WinEvaluator (ways, Wild substitution), CascadeEngine,
   MultiplierEngine, DragonFortuneEngine, FreeSpinEngine (Scatter awards), GameEngine invariants over
   thousands of seeded spins, RandomSource, simulation.
-- **API integration tests** (Supertest, real PostgreSQL) – register → login → state → spin → verify
+- **API integration tests** (Supertest, real PostgreSQL) – guest → state → spin → verify
   balance, auth/cookies, invalid bet, insufficient balance, idempotent replay, **concurrent spins**,
   Free Spins & Dragon meter persistence, tenant isolation, history/profile.
-- **Frontend tests** (React Testing Library) – login, register, HUD, bet controls, loading & error
-  states, protected route, audio manager with missing files.
+- **Frontend tests** (React Testing Library) – guest gate, HUD, bet controls, paytable, leaderboard,
+  language switch, loading & error states, audio manager with missing files.
 
 ### End-to-end tests (Playwright)
 
@@ -366,18 +344,17 @@ npm run typecheck
 npm run test:e2e
 ```
 
-Real-browser tests drive the running site: registering and spinning (the balance on screen must match
-the server), Turbo, auto spin (one button to start and stop), the per-bet paytable, the English /
-Chinese switch, the leaderboard, and the admin dashboard (players are turned away, the administrator
-gets in). They start `npm run dev` for you, or reuse it when it is already running.
+Real-browser tests drive the running site: the site opens straight into the game as a guest (no
+login, register or admin page exists), the guest survives a reload, spinning (the balance on screen
+must match the server), Turbo, auto spin (one button to start and stop), the per-bet paytable, the
+English / Chinese switch, the leaderboard and profile, and the sounds. They start `npm run dev` for you, or reuse it when it is already running.
 
-- Needs PostgreSQL with migrations applied and the demo administrator seeded
-  (`npm run db:seed -- --admin-only`).
+- Needs PostgreSQL with the migrations applied (`npm run db:deploy`).
 - First time only: `npx playwright install chromium`. To use a browser you already have instead of
   downloading one: `set PW_CHANNEL=msedge` (or `chrome`) before running.
 - To test a deployment (for example the Docker stack below):
   `set E2E_BASE_URL=http://localhost:8080`.
-- Every test registers its own player, and the API rate-limits sign-ups per address (30 per 15
+- Each test gets its own guest, and the API rate-limits NEW guests per address (30 per 15
   minutes), so avoid running the suite many times in a row against one server.
 - After a failure: `npm run report -w @mahjong/e2e` opens the report with screenshots and traces.
 
@@ -410,7 +387,7 @@ For production: run `npm run db:deploy`, serve `apps/web/dist` from any static h
 
 The repository has production images (one [`Dockerfile`](Dockerfile), targets `api`, `web`,
 `migrate`) and a ready-made stack: PostgreSQL, a one-shot migration, the API, and nginx serving the
-web app and forwarding `/api` to the API on the same origin (so the login cookie just works).
+web app and forwarding `/api` to the API on the same origin (so the guest cookie just works).
 
 ```bat
 set POSTGRES_PASSWORD=choose-letters-and-digits
@@ -426,8 +403,7 @@ Then open http://localhost:8080 (`WEB_PORT` changes the port). Stop with
   be served over HTTPS (put a TLS proxy or load balancer in front) and `WEB_ORIGIN` set to its public
   `https://` address. `TRUST_PROXY=1` (already set in the stack) makes rate limits see real client
   addresses behind nginx.
-- The stack does not create the demo accounts. Sign up in the browser, or run the seed against the
-  database yourself. The demo administrator is never created in production.
+- Nothing has to be seeded: every visitor gets a guest player automatically.
 - GitHub Actions builds these images and smoke-tests the stack on every push (see the `docker` job).
 
 ## Git workflow
@@ -483,18 +459,13 @@ key press, and the game starts the music on the first one.
 - Canvas text (FREE SPINS banner etc.) and page text are translated, but error messages that come from the API and the form validation messages are English only.
 - Placeholder artwork is generated SVG; the CJK glyphs in the tiles rely on system fonts
   (Windows, macOS, Android and iOS all include suitable ones).
-- No password reset or email verification (there is no email service by design).
+- There are no accounts: a guest's balance lives with a browser cookie, so clearing site data (or switching browser or device) starts a new guest.
 - The Phaser bundle is large (≈330 kB gzip); it is code-split so only game players download it.
-- Docker Compose is provided for local PostgreSQL only (no production Dockerfiles).
+- `docker-compose.yml` is for a local PostgreSQL only; `docker-compose.prod.yml` runs the whole stack.
 
 ## Future improvements
 
 - Final artwork and professional audio (placeholders are generated); animated sprite-sheet Dragon
-- Turbo / skip-animation and autoplay options, sound-mix settings
-- Additional bonus features (e.g. wild-reel respins) and per-bet paytable display
-- Leaderboards of _demo_ wins, admin/analytics dashboard
-- Production Dockerfiles, Playwright end-to-end tests in CI
-- i18n (Chinese / English)
 
 ---
 

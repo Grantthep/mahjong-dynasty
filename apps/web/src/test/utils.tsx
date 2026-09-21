@@ -54,9 +54,7 @@ export function renderWithProviders(
 
 export const demoUser = {
   id: 'user-1',
-  email: 'demo@mahjong.local',
-  username: 'demo_player',
+  username: 'Guest4821',
   demoBalance: 10_000,
-  role: 'PLAYER' as const,
   createdAt: '2026-01-01T00:00:00.000Z',
 };

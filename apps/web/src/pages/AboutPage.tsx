@@ -75,11 +75,8 @@ export default function AboutPage() {
         </section>
 
         <p className={styles.actions}>
-          <Link to="/game" className="btn primary">
-            {t('common.enterGame')}
-          </Link>
-          <Link to="/" className="btn ghost">
-            {t('common.home')}
+          <Link to="/" className="btn primary">
+            {t('common.backToGame')}
           </Link>
         </p>
         <p className={styles.muted}>{t('common.notCertified')}</p>

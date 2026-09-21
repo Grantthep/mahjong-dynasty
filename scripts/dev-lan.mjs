@@ -5,12 +5,11 @@
  *
  * It finds this computer's local network address, starts the API and the web app listening on the
  * network (not just on localhost), and tells the API to accept that address as the web origin
- * (otherwise logging in from the phone is refused). Then open the printed URL on the phone.
+ * (otherwise the phone's requests are refused). Then open the printed URL on the phone.
  *
  *   LAN_IP=192.168.1.50 npm run dev:phone     pick the address yourself if several are listed
  *
- * FOR TRUSTED HOME NETWORKS ONLY: anyone on the same network can reach the game, and the seeded
- * demo accounts have well-known passwords.
+ * FOR TRUSTED HOME NETWORKS ONLY: anyone on the same network can reach the game and play as a guest.
  */
 import { spawn } from 'node:child_process';
 import { networkInterfaces } from 'node:os';

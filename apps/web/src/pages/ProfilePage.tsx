@@ -1,6 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ErrorScreen, LoadingScreen } from '../components/StatusScreens';
-import { useLogout } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useGameData';
 import { useT } from '../i18n';
 import { PageLayout } from '../layouts/PageLayout';
@@ -9,9 +8,7 @@ import styles from './InfoPages.module.css';
 
 export default function ProfilePage() {
   const t = useT();
-  const navigate = useNavigate();
   const profile = useProfile();
-  const logout = useLogout();
 
   if (profile.isPending) return <LoadingScreen label={t('status.loadProfile')} />;
   if (profile.isError) {
@@ -34,7 +31,6 @@ export default function ProfilePage() {
       <article className={styles.article}>
         <h1>{user.username}</h1>
         <p className={styles.muted}>
-          {user.email} ·{' '}
           {t('profile.member', { date: new Date(user.createdAt).toLocaleDateString() })} ·{' '}
           {t('common.demoMode')}
         </p>
@@ -95,16 +91,9 @@ export default function ProfilePage() {
         )}
 
         <p className={styles.actions}>
-          <Link to="/game" className="btn primary">
+          <Link to="/" className="btn primary">
             {t('common.backToGame')}
           </Link>
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={() => logout.mutate(undefined, { onSettled: () => navigate('/') })}
-          >
-            {t('common.logOut')}
-          </button>
         </p>
       </article>
     </PageLayout>

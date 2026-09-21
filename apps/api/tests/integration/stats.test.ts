@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, describe, expect, inject, it } from 'vitest';
 import request from 'supertest';
-import { createTestContext, registerUser, spinBody, type TestUser } from '../helpers/testApp';
+import { createGuest, createTestContext, spinBody, type TestUser } from '../helpers/testApp';
 
-describe.skipIf(!inject('dbAvailable'))('leaderboard and admin API', () => {
+describe.skipIf(!inject('dbAvailable'))('leaderboard API', () => {
   const ctx = createTestContext();
   afterAll(() => ctx.prisma.$disconnect());
 
@@ -21,14 +21,14 @@ describe.skipIf(!inject('dbAvailable'))('leaderboard and admin API', () => {
     });
 
     it('rejects an unknown period or an out-of-range limit', async () => {
-      const user = await registerUser(ctx);
+      const user = await createGuest(ctx);
       expect((await user.agent.get('/api/leaderboard?period=week')).status).toBe(400);
       expect((await user.agent.get('/api/leaderboard?limit=0')).status).toBe(400);
       expect((await user.agent.get('/api/leaderboard?limit=51')).status).toBe(400);
     });
 
     it('lists the best single-spin wins first, with usernames only', async () => {
-      const user = await registerUser(ctx);
+      const user = await createGuest(ctx);
       await playSpins(user, 25);
 
       const res = await user.agent.get('/api/leaderboard?period=all&limit=50');
@@ -53,7 +53,6 @@ describe.skipIf(!inject('dbAvailable'))('leaderboard and admin API', () => {
 
       // Nothing private is exposed.
       const text = JSON.stringify(res.body);
-      expect(text).not.toContain(user.email);
       expect(text).not.toContain('passwordHash');
       expect(text).not.toContain('balance');
 
@@ -62,7 +61,7 @@ describe.skipIf(!inject('dbAvailable'))('leaderboard and admin API', () => {
     });
 
     it('honours the limit', async () => {
-      const user = await registerUser(ctx);
+      const user = await createGuest(ctx);
       await playSpins(user, 10);
       const res = await user.agent.get('/api/leaderboard?limit=3');
       expect(res.status).toBe(200);
@@ -70,7 +69,7 @@ describe.skipIf(!inject('dbAvailable'))('leaderboard and admin API', () => {
     });
 
     it('the day period leaves out wins older than 24 hours', async () => {
-      const user = await registerUser(ctx);
+      const user = await createGuest(ctx);
       const session = await ctx.prisma.gameSession.findUniqueOrThrow({
         where: { userId: user.id },
       });
@@ -103,76 +102,6 @@ describe.skipIf(!inject('dbAvailable'))('leaderboard and admin API', () => {
       } finally {
         await ctx.prisma.spin.delete({ where: { id: old.id } });
       }
-    });
-  });
-
-  describe('GET /api/admin/analytics', () => {
-    it('requires a signed-in user', async () => {
-      const res = await request(ctx.app).get('/api/admin/analytics');
-      expect(res.status).toBe(401);
-    });
-
-    it('is forbidden for ordinary players', async () => {
-      const user = await registerUser(ctx);
-      const res = await user.agent.get('/api/admin/analytics');
-      expect(res.status).toBe(403);
-      expect(res.body.error.code).toBe('FORBIDDEN');
-    });
-
-    it('never lets a new account register as an admin', async () => {
-      const user = await registerUser(ctx);
-      const me = await user.agent.get('/api/auth/me');
-      expect(me.body.user.role).toBe('PLAYER');
-      const attempt = await request(ctx.app)
-        .post('/api/auth/register')
-        .send({
-          email: `sneaky_${randomUUID().slice(0, 8)}@example.com`,
-          username: `sneaky_${randomUUID().replace(/-/g, '').slice(0, 8)}`,
-          password: 'CorrectHorse42',
-          role: 'ADMIN',
-        });
-      expect(attempt.status).toBe(201);
-      expect(attempt.body.user.role).toBe('PLAYER');
-    });
-
-    it('returns aggregate analytics to an administrator, and reads the role live', async () => {
-      const user = await registerUser(ctx);
-      await playSpins(user, 12);
-      await ctx.prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
-
-      const res = await user.agent.get('/api/admin/analytics');
-      expect(res.status).toBe(200);
-      const { totals, daily, topPlayers } = res.body;
-
-      expect(totals.admins).toBeGreaterThanOrEqual(1);
-      expect(totals.players).toBeGreaterThanOrEqual(1);
-      expect(totals.totalSpins).toBeGreaterThanOrEqual(12);
-      expect(totals.paidSpins + totals.freeSpins).toBe(totals.totalSpins);
-      expect(totals.totalBet).toBeGreaterThanOrEqual(12 * 20 - 20 * totals.freeSpins);
-      expect(totals.observedReturn).toBeCloseTo(totals.totalWon / totals.totalBet, 6);
-      expect(totals.largestWin).toBeGreaterThanOrEqual(0);
-      expect(totals.wildReelRespins).toBeGreaterThanOrEqual(0);
-
-      // Exactly the last 14 UTC days, oldest first, ending today.
-      expect(daily).toHaveLength(14);
-      expect(daily[13].date).toBe(new Date().toISOString().slice(0, 10));
-      const dates = daily.map((day: { date: string }) => day.date);
-      expect([...dates].sort()).toEqual(dates);
-      // Older spins and spins from other test files may exist, so compare loosely.
-      const inWindow = daily.reduce((sum: number, day: { spins: number }) => sum + day.spins, 0);
-      expect(inWindow).toBeGreaterThanOrEqual(12);
-      expect(daily[13].spins).toBeGreaterThanOrEqual(12);
-
-      expect(topPlayers.length).toBeLessThanOrEqual(5);
-      for (const player of topPlayers) {
-        expect(Object.keys(player).sort()).toEqual(['spins', 'totalBet', 'totalWon', 'username']);
-      }
-      expect(JSON.stringify(res.body)).not.toContain(user.email);
-
-      // Demoting the admin locks them out straight away (the role is not stored in the token).
-      await ctx.prisma.user.update({ where: { id: user.id }, data: { role: 'PLAYER' } });
-      const after = await user.agent.get('/api/admin/analytics');
-      expect(after.status).toBe(403);
     });
   });
 });

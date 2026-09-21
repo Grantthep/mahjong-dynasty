@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { gameApi } from '../api/endpoints';
 import { GearIcon, PaytableIcon, SoundIcon } from '../components/Icons';
@@ -12,7 +11,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { ErrorScreen, LoadingScreen } from '../components/StatusScreens';
 import { WinOverlay } from '../components/WinOverlay';
 import { GameController } from '../game/GameController';
-import { useLogout, useMe } from '../hooks/useAuth';
+import { useMe } from '../hooks/useAuth';
 import { useGameConfig, useGameState } from '../hooks/useGameData';
 import { translate, useLanguage, useT, type TranslationKey } from '../i18n';
 import { useGameStore } from '../store/gameStore';
@@ -42,11 +41,9 @@ const TURBO_NEXT_SPIN_DELAY_MS = 300;
 
 export default function GamePage() {
   const t = useT();
-  const navigate = useNavigate();
   const config = useGameConfig();
   const gameState = useGameState();
   const me = useMe();
-  const logout = useLogout();
 
   const {
     phase,
@@ -199,7 +196,8 @@ export default function GamePage() {
     async (cause: unknown) => {
       if (cause instanceof ApiError) {
         if (cause.status === 401) {
-          navigate('/login', { replace: true });
+          // The guest cookie is gone or invalid: reload so the server hands out a new guest.
+          window.location.reload();
           return;
         }
         if (cause.code === 'SPIN_IN_PROGRESS') return;
@@ -209,7 +207,7 @@ export default function GamePage() {
       }
       await resync();
     },
-    [navigate, resync],
+    [resync],
   );
 
   /* ---------- the spin ---------- */
@@ -468,7 +466,6 @@ export default function GamePage() {
       />
 
       <SettingsPanel
-        isAdmin={me.data?.role === 'ADMIN'}
         onOpenPaytable={() => {
           setSettingsOpen(false);
           setPaytableOpen(true);
@@ -484,7 +481,6 @@ export default function GamePage() {
         onVolumeChange={(next) => useGameStore.getState().setVolume(next)}
         onMusicVolumeChange={(next) => useGameStore.getState().setMusicVolume(next)}
         onSfxVolumeChange={(next) => useGameStore.getState().setSfxVolume(next)}
-        onLogout={() => logout.mutate(undefined, { onSettled: () => navigate('/') })}
       />
 
       {overlay ? (

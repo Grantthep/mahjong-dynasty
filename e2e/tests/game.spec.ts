@@ -1,28 +1,65 @@
 import { expect, test } from '@playwright/test';
 import {
+  currentPlayer,
   hudStatus,
-  newPlayer,
   openGame,
-  registerByApi,
   shownBalance,
   spinButton,
   waitForSpinToFinish,
 } from './helpers';
 
-test.describe('playing the game', () => {
-  test('a new player registers, spins, and the balance matches the server', async ({ page }) => {
-    const player = newPlayer();
-    await page.goto('/register');
-    await page.getByLabel('Email').fill(player.email);
-    await page.getByLabel('Username').fill(player.username);
-    await page.getByLabel('Password').fill(player.password);
-    await page.getByRole('button', { name: 'Create account' }).click();
-    await expect(page).toHaveURL(/\/game$/);
-
+test.describe('a visitor becomes a guest player and plays', () => {
+  test('the site opens straight into the game, with no login or sign-up', async ({ page }) => {
     await openGame(page);
+    await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId('balance-value')).toHaveText('10,000');
     await expect(page.getByText('DEMO MODE · DEMO CREDITS ONLY')).toBeVisible();
 
+    // Nothing to sign in to: no such buttons or links anywhere on the page or in the menu.
+    const forbidden = /log ?in|log ?out|sign ?(in|up)|register|enter game/i;
+    await expect(page.getByRole('link', { name: forbidden })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: forbidden })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    const settings = page.getByRole('dialog', { name: 'Settings' });
+    await expect(settings.getByText(/^Playing as Guest\d{4,6}$/)).toBeVisible();
+    await expect(settings.getByRole('button', { name: forbidden })).toHaveCount(0);
+    await expect(settings.getByRole('link', { name: forbidden })).toHaveCount(0);
+  });
+
+  test('the login, register, admin and old /game addresses are gone', async ({ page }) => {
+    for (const path of ['/login', '/register', '/admin']) {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name: 'Lost in the palace' }), path).toBeVisible();
+    }
+    for (const path of ['/api/auth/login', '/api/auth/register', '/api/admin/analytics']) {
+      expect((await page.request.get(path)).status(), path).toBe(404);
+    }
+    // The old game address still works and lands on the game.
+    await page.goto('/game');
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test('a guest keeps the same player after reloading; a new browser is a new guest', async ({
+    page,
+    browser,
+  }) => {
+    await openGame(page);
+    const before = await currentPlayer(page);
+
+    await page.reload();
+    await expect(page.getByTestId('balance-value')).toBeVisible();
+    expect(await currentPlayer(page)).toEqual(before);
+
+    // A different browser (no cookie) gets a different guest.
+    const other = await browser.newContext();
+    const res = await other.request.post('/api/auth/guest');
+    expect(res.status()).toBe(201);
+    expect((await res.json()).user.id).not.toBe(before.id);
+    await other.close();
+  });
+
+  test('spins, and the balance on screen matches the server', async ({ page }) => {
+    await openGame(page);
     await page.getByRole('button', { name: 'TURBO' }).click();
     await spinButton(page).click();
     await waitForSpinToFinish(page);
@@ -30,7 +67,6 @@ test.describe('playing the game', () => {
     // What the screen shows is what the server holds (the browser never decides a result).
     const state = await (await page.request.get('/api/game/state')).json();
     expect(await shownBalance(page)).toBe(state.balance);
-    expect(state.balance).toBeLessThan(10_000 + 20 * 5000);
 
     const history = await (await page.request.get('/api/game/history?limit=5')).json();
     expect(history.spins.length).toBeGreaterThanOrEqual(1);
@@ -38,7 +74,6 @@ test.describe('playing the game', () => {
   });
 
   test('the bet can be changed and there is no skip button', async ({ page }) => {
-    await registerByApi(page);
     await openGame(page);
 
     await page.getByRole('button', { name: 'Increase bet' }).click();
@@ -53,7 +88,6 @@ test.describe('playing the game', () => {
   });
 
   test('one button starts auto spin and stops it again', async ({ page }) => {
-    await registerByApi(page);
     await openGame(page);
     await page.getByRole('button', { name: 'TURBO' }).click();
     const spinCount = async () =>
@@ -83,7 +117,6 @@ test.describe('playing the game', () => {
 
 test.describe('menus and pages', () => {
   test('the paytable shows the credits for the chosen bet', async ({ page }) => {
-    await registerByApi(page);
     const config = await (await page.request.get('/api/game/config')).json();
     await openGame(page);
 
@@ -101,25 +134,21 @@ test.describe('menus and pages', () => {
   });
 
   test('the language can be switched to Chinese and is remembered', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByText('A mystical Mahjong adventure awaits.')).toBeVisible();
+    await page.goto('/about');
+    await expect(page.getByRole('heading', { name: 'About Mahjong Dynasty' })).toBeVisible();
 
     await page.getByRole('combobox', { name: 'Language' }).selectOption('zh');
-    await expect(page.getByText('一场神秘的麻将冒险正等着你。')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '关于麻将王朝' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
 
     await page.reload();
-    await expect(page.getByText('一场神秘的麻将冒险正等着你。')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '关于麻将王朝' })).toBeVisible();
 
     await page.getByRole('combobox', { name: '语言' }).selectOption('en');
-    await expect(page.getByText('A mystical Mahjong adventure awaits.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'About Mahjong Dynasty' })).toBeVisible();
   });
 
-  test('the leaderboard is for signed-in players and lists usernames only', async ({ page }) => {
-    await page.goto('/leaderboard');
-    await expect(page).toHaveURL(/\/login$/);
-
-    const player = await registerByApi(page);
+  test('the leaderboard and profile work for a guest and show usernames only', async ({ page }) => {
     await page.goto('/leaderboard');
     await expect(page.getByRole('heading', { name: 'Top demo wins' })).toBeVisible();
     await page.getByRole('button', { name: 'Last 24 hours' }).click();
@@ -127,7 +156,12 @@ test.describe('menus and pages', () => {
       'aria-pressed',
       'true',
     );
-    await expect(page.getByRole('main')).not.toContainText(player.email);
+    await expect(page.getByRole('main')).not.toContainText('@');
+
+    const player = await currentPlayer(page);
+    await page.goto('/profile');
+    await expect(page.getByRole('heading', { name: player.username })).toBeVisible();
+    await expect(page.getByRole('main')).not.toContainText('@');
   });
 });
 
@@ -148,7 +182,7 @@ test.describe('sound', () => {
   ];
 
   test('the browser can decode every sound file', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/about');
     const durations = await page.evaluate(async (names) => {
       const load = (name: string) =>
         new Promise<number>((resolve) => {
@@ -171,7 +205,6 @@ test.describe('sound', () => {
   });
 
   test('entering the game fetches the background music', async ({ page }) => {
-    await registerByApi(page);
     const music = page.waitForResponse((res) =>
       /\/assets\/audio\/bgm-main\.(wav|mp3|ogg)$/.test(res.url()),
     );

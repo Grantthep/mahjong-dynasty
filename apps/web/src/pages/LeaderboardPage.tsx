@@ -84,11 +84,8 @@ export default function LeaderboardPage() {
         ) : null}
 
         <p className={styles.actions}>
-          <Link to="/game" className="btn primary">
+          <Link to="/" className="btn primary">
             {t('common.backToGame')}
-          </Link>
-          <Link to="/" className="btn ghost">
-            {t('common.home')}
           </Link>
         </p>
         <p className={styles.muted}>{t('common.demoFooter')}</p>

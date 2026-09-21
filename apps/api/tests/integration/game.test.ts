@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, describe, expect, inject, it } from 'vitest';
 import request from 'supertest';
-import { createTestContext, registerUser, spinBody } from '../helpers/testApp';
+import { createGuest, createTestContext, spinBody } from '../helpers/testApp';
 
 describe.skipIf(!inject('dbAvailable'))('game API', () => {
   const ctx = createTestContext();
@@ -18,15 +18,9 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
     });
   });
 
-  it('register -> login -> state -> spin -> verify balance', async () => {
-    const user = await registerUser(ctx);
-
-    const login = await request(ctx.app)
-      .post('/api/auth/login')
-      .send({ email: user.email, password: user.password });
-    expect(login.status).toBe(200);
-    const agent = request.agent(ctx.app);
-    await agent.post('/api/auth/login').send({ email: user.email, password: user.password });
+  it('guest -> state -> spin -> verify balance', async () => {
+    const user = await createGuest(ctx);
+    const agent = user.agent;
 
     const state = await agent.get('/api/game/state');
     expect(state.status).toBe(200);
@@ -61,7 +55,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('stores every spin and lists it in the history and profile', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     let totalBet = 0;
     let totalWon = 0;
     for (let i = 0; i < 5; i++) {
@@ -94,7 +88,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it.each([7, 0, -10, 15, 1000])('rejects the invalid bet %s', async (bet) => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     const res = await user.agent.post('/api/game/spin').send({ bet, requestId: randomUUID() });
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -103,7 +97,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('rejects non-numeric bets and a missing requestId', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     expect(
       (await user.agent.post('/api/game/spin').send({ bet: '50', requestId: randomUUID() })).status,
     ).toBe(400);
@@ -114,7 +108,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('rejects a spin when the balance is too low and leaves the balance untouched', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     await ctx.prisma.user.update({ where: { id: user.id }, data: { demoBalance: 15 } });
 
     const res = await user.agent.post('/api/game/spin').send(spinBody(20));
@@ -127,7 +121,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('allows a spin when the balance exactly equals the bet', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     await ctx.prisma.user.update({ where: { id: user.id }, data: { demoBalance: 10 } });
     const res = await user.agent.post('/api/game/spin').send(spinBody(10));
     expect(res.status).toBe(200);
@@ -135,7 +129,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('ignores client-supplied balance, win, board, multiplier, Free Spins and Dragon meter', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     const res = await user.agent.post('/api/game/spin').send({
       ...spinBody(10),
       balance: 999_999,
@@ -155,7 +149,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('is idempotent: repeating a requestId returns the same result and charges once', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     const body = spinBody(100);
     const first = await user.agent.post('/api/game/spin').send(body);
     const second = await user.agent.post('/api/game/spin').send(body);
@@ -169,7 +163,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('never double-charges under concurrent spins', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     // With only one spin affordable, 6 simultaneous requests may not all succeed.
     await ctx.prisma.user.update({ where: { id: user.id }, data: { demoBalance: 200 } });
 
@@ -201,7 +195,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('returns 409 for a spin fired while another is still in progress', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     const [a, b] = await Promise.all([
       user.agent.post('/api/game/spin').send(spinBody(10)),
       user.agent.post('/api/game/spin').send(spinBody(10)),
@@ -214,7 +208,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
 
   describe('Free Spins persistence', () => {
     it('uses the locked bet, never charges, and survives a "browser refresh"', async () => {
-      const user = await registerUser(ctx);
+      const user = await createGuest(ctx);
       await ctx.prisma.gameSession.update({
         where: { userId: user.id },
         data: { freeSpinsRemaining: 3, freeSpinsTotal: 8, freeSpinBet: 100, freeSpinsWin: 0 },
@@ -222,7 +216,8 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
 
       // A refresh = a brand-new client fetching the state.
       const refreshed = request.agent(ctx.app);
-      await refreshed.post('/api/auth/login').send({ email: user.email, password: user.password });
+      const resumed = await refreshed.post('/api/auth/guest').set('Cookie', user.cookie);
+      expect(resumed.body.user.id).toBe(user.id);
       const state = await refreshed.get('/api/game/state');
       expect(state.body.session).toMatchObject({
         freeSpinsRemaining: 3,
@@ -245,7 +240,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
     });
 
     it('lets Free Spins be played even with a zero balance and completes the round', async () => {
-      const user = await registerUser(ctx);
+      const user = await createGuest(ctx);
       await ctx.prisma.user.update({ where: { id: user.id }, data: { demoBalance: 0 } });
       await ctx.prisma.gameSession.update({
         where: { userId: user.id },
@@ -264,7 +259,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('persists the Dragon Fortune meter between spins', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     await ctx.prisma.gameSession.update({ where: { userId: user.id }, data: { dragonMeter: 60 } });
     const spin = await user.agent.post('/api/game/spin').send(spinBody(10));
     expect(spin.body.dragonMeterBefore).toBe(60);
@@ -273,8 +268,8 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it("keeps each player's data isolated", async () => {
-    const alice = await registerUser(ctx);
-    const bob = await registerUser(ctx);
+    const alice = await createGuest(ctx);
+    const bob = await createGuest(ctx);
     await alice.agent.post('/api/game/spin').send(spinBody(10));
     const bobHistory = await bob.agent.get('/api/game/history');
     expect(bobHistory.body.spins).toEqual([]);
@@ -283,7 +278,7 @@ describe.skipIf(!inject('dbAvailable'))('game API', () => {
   });
 
   it('validates the history limit', async () => {
-    const user = await registerUser(ctx);
+    const user = await createGuest(ctx);
     expect((await user.agent.get('/api/game/history?limit=0')).status).toBe(400);
     expect((await user.agent.get('/api/game/history?limit=500')).status).toBe(400);
     expect((await user.agent.get('/api/game/history?limit=5')).status).toBe(200);

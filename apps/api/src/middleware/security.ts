@@ -29,7 +29,7 @@ export function createRateLimiters(enabled: boolean): RateLimiters {
       15 * 60_000,
       30,
       'AUTH_RATE_LIMITED',
-      'Too many login attempts. Try again later.',
+      'Too many new players from this address. Try again later.',
     ),
     spin: limiter(60_000, 120, 'SPIN_RATE_LIMITED', 'Too many spins. Please slow down.'),
   };

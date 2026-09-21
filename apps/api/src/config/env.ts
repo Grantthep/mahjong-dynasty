@@ -11,7 +11,6 @@ const envSchema = z
     API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     WEB_ORIGIN: z.string().url().default('http://localhost:5173'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).optional(),
     /** Reverse proxies in front of the API (e.g. 1 behind nginx). 0 = the API is reached directly. */
     TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
   })
@@ -28,7 +27,7 @@ const envSchema = z
     }
   });
 
-export type Env = z.infer<typeof envSchema> & { BCRYPT_ROUNDS: number };
+export type Env = z.infer<typeof envSchema>;
 
 /** Loads the repository-root .env (when present) without overriding real environment variables. */
 export function loadDotenv(): void {
@@ -45,6 +44,5 @@ export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
       .join('\n');
     throw new Error(`Invalid environment configuration:\n${problems}\nSee .env.example`);
   }
-  const data = parsed.data;
-  return { ...data, BCRYPT_ROUNDS: data.BCRYPT_ROUNDS ?? (data.NODE_ENV === 'test' ? 4 : 12) };
+  return parsed.data;
 }

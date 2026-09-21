@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-export const TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
+/** A guest keeps their balance for a year of not visiting (the cookie is renewed on every visit). */
+export const TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
 
 export class TokenService {
   constructor(private readonly secret: string) {}

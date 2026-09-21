@@ -1,8 +1,12 @@
+import jwt from 'jsonwebtoken';
 import { afterAll, describe, expect, inject, it } from 'vitest';
 import request from 'supertest';
-import { createTestContext, registerUser, uniqueSuffix } from '../helpers/testApp';
+import { createGuest, createTestContext } from '../helpers/testApp';
 
-describe.skipIf(!inject('dbAvailable'))('authentication API', () => {
+const cookieOf = (res: { headers: Record<string, unknown> }) =>
+  ((res.headers['set-cookie'] as string[] | undefined) ?? []).join(';');
+
+describe.skipIf(!inject('dbAvailable'))('guest players API', () => {
   const ctx = createTestContext();
   afterAll(() => ctx.prisma.$disconnect());
 
@@ -12,109 +16,83 @@ describe.skipIf(!inject('dbAvailable'))('authentication API', () => {
     expect(res.body).toMatchObject({ status: 'ok', demoMode: true });
   });
 
-  it('registers a user with 10,000 DEMO CREDITS and sets an HttpOnly cookie', async () => {
-    const suffix = uniqueSuffix();
-    const res = await request(ctx.app)
-      .post('/api/auth/register')
-      .send({
-        email: `A_${suffix}@Example.com`,
-        username: `user_${suffix}`,
-        password: 'Password123',
-      });
+  it('gives a new visitor a guest player with 10,000 DEMO CREDITS and an HttpOnly cookie', async () => {
+    const res = await request(ctx.app).post('/api/auth/guest');
 
     expect(res.status).toBe(201);
-    expect(res.body.user).toMatchObject({
-      email: `a_${suffix}@example.com`,
-      username: `user_${suffix}`,
-      demoBalance: 10_000,
-    });
-    expect(res.body.user).not.toHaveProperty('passwordHash');
+    expect(res.body.user).toMatchObject({ demoBalance: 10_000 });
+    expect(res.body.user.username).toMatch(/^Guest\d{4,6}$/);
+    // Nothing that identifies a person or could be a credential.
+    expect(Object.keys(res.body.user).sort()).toEqual([
+      'createdAt',
+      'demoBalance',
+      'id',
+      'username',
+    ]);
 
-    const cookie = (res.headers['set-cookie'] as unknown as string[]).join(';');
+    const cookie = cookieOf(res);
     expect(cookie).toContain('mjd_token=');
     expect(cookie).toContain('HttpOnly');
     expect(cookie).toContain('SameSite=Lax');
   });
 
-  it('never stores the plain-text password', async () => {
-    const user = await registerUser(ctx);
-    const row = await ctx.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
-    expect(row.passwordHash).not.toContain(user.password);
-    expect(row.passwordHash).toMatch(/^\$2[aby]\$/);
-  });
-
-  it('creates a game session together with the account', async () => {
-    const user = await registerUser(ctx);
-    const session = await ctx.prisma.gameSession.findUnique({ where: { userId: user.id } });
+  it('creates the game session together with the guest', async () => {
+    const guest = await createGuest(ctx);
+    const session = await ctx.prisma.gameSession.findUnique({ where: { userId: guest.id } });
     expect(session).toMatchObject({ dragonMeter: 0, freeSpinsRemaining: 0 });
   });
 
-  it('rejects duplicate emails and usernames', async () => {
-    const user = await registerUser(ctx);
-    const dupEmail = await request(ctx.app)
-      .post('/api/auth/register')
-      .send({ email: user.email, username: `other_${uniqueSuffix()}`, password: 'Password123' });
-    expect(dupEmail.status).toBe(409);
-    expect(dupEmail.body.error.code).toBe('EMAIL_TAKEN');
-
-    const dupName = await request(ctx.app)
-      .post('/api/auth/register')
-      .send({
-        email: `x_${uniqueSuffix()}@example.com`,
-        username: user.username,
-        password: 'Password123',
-      });
-    expect(dupName.status).toBe(409);
-    expect(dupName.body.error.code).toBe('USERNAME_TAKEN');
+  it('gives every visitor a different player and a unique name', async () => {
+    const guests = await Promise.all(Array.from({ length: 12 }, () => createGuest(ctx)));
+    expect(new Set(guests.map((g) => g.id)).size).toBe(12);
+    expect(new Set(guests.map((g) => g.username)).size).toBe(12);
   });
 
-  it.each([
-    ['short password', { email: 'a@example.com', username: 'valid_name', password: 'short' }],
-    ['bad email', { email: 'nope', username: 'valid_name', password: 'Password123' }],
-    ['bad username', { email: 'a@example.com', username: 'no spaces!', password: 'Password123' }],
-    ['missing fields', {}],
-  ])('rejects invalid registration (%s)', async (_label, body) => {
-    const res = await request(ctx.app).post('/api/auth/register').send(body);
-    expect(res.status).toBe(400);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+  it('returns the SAME player to a browser that already has the cookie', async () => {
+    const guest = await createGuest(ctx);
+    const again = await guest.agent.post('/api/auth/guest');
+    expect(again.status).toBe(200);
+    expect(again.body.user.id).toBe(guest.id);
+    expect(cookieOf(again)).toContain('mjd_token='); // renewed
+
+    // A second device presenting the same cookie is the same player too.
+    const other = await request(ctx.app).post('/api/auth/guest').set('Cookie', guest.cookie);
+    expect(other.status).toBe(200);
+    expect(other.body.user.id).toBe(guest.id);
   });
 
-  it('logs in with correct credentials', async () => {
-    const user = await registerUser(ctx);
-    const res = await request(ctx.app)
-      .post('/api/auth/login')
-      .send({ email: user.email, password: user.password });
-    expect(res.status).toBe(200);
-    expect(res.body.user.username).toBe(user.username);
-    expect((res.headers['set-cookie'] as unknown as string[]).join(';')).toContain('mjd_token=');
+  it('starts a fresh guest when the cookie is garbage, forged or belongs to a deleted player', async () => {
+    const garbage = await request(ctx.app)
+      .post('/api/auth/guest')
+      .set('Cookie', 'mjd_token=not.a.jwt');
+    expect(garbage.status).toBe(201);
+
+    const forged = jwt.sign({}, 'some-other-secret-some-other-secret-1234', { subject: 'abc' });
+    const forgedRes = await request(ctx.app)
+      .post('/api/auth/guest')
+      .set('Cookie', `mjd_token=${forged}`);
+    expect(forgedRes.status).toBe(201);
+
+    const gone = await createGuest(ctx);
+    await ctx.prisma.user.delete({ where: { id: gone.id } });
+    const afterDelete = await request(ctx.app).post('/api/auth/guest').set('Cookie', gone.cookie);
+    expect(afterDelete.status).toBe(201);
+    expect(afterDelete.body.user.id).not.toBe(gone.id);
   });
 
-  it('rejects a wrong password and an unknown email with the same message', async () => {
-    const user = await registerUser(ctx);
-    const wrong = await request(ctx.app)
-      .post('/api/auth/login')
-      .send({ email: user.email, password: 'WrongPassword1' });
-    const unknown = await request(ctx.app)
-      .post('/api/auth/login')
-      .send({ email: `nobody_${uniqueSuffix()}@example.com`, password: 'WrongPassword1' });
-    expect(wrong.status).toBe(401);
-    expect(unknown.status).toBe(401);
-    expect(wrong.body.error.message).toBe(unknown.body.error.message);
-  });
-
-  it('GET /api/auth/me requires authentication', async () => {
+  it('GET /api/auth/me requires a session', async () => {
     const res = await request(ctx.app).get('/api/auth/me');
     expect(res.status).toBe(401);
     expect(res.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('GET /api/auth/me returns the current user', async () => {
-    const user = await registerUser(ctx);
-    const res = await user.agent.get('/api/auth/me');
+  it('GET /api/auth/me returns the current guest', async () => {
+    const guest = await createGuest(ctx);
+    const res = await guest.agent.get('/api/auth/me');
     expect(res.status).toBe(200);
     expect(res.body.user).toMatchObject({
-      id: user.id,
-      username: user.username,
+      id: guest.id,
+      username: guest.username,
       demoBalance: 10_000,
     });
   });
@@ -124,18 +102,26 @@ describe.skipIf(!inject('dbAvailable'))('authentication API', () => {
     expect(res.status).toBe(401);
   });
 
-  it('logout clears the cookie', async () => {
-    const user = await registerUser(ctx);
-    const out = await user.agent.post('/api/auth/logout');
-    expect(out.status).toBe(204);
-    expect((out.headers['set-cookie'] as unknown as string[]).join(';')).toMatch(/mjd_token=;/);
-    const me = await user.agent.get('/api/auth/me');
-    expect(me.status).toBe(401);
+  it('no longer has register, login, logout or admin endpoints', async () => {
+    for (const [method, path] of [
+      ['post', '/api/auth/register'],
+      ['post', '/api/auth/login'],
+      ['post', '/api/auth/logout'],
+      ['get', '/api/admin/analytics'],
+    ] as const) {
+      const res = await request(ctx.app)[method](path);
+      expect(res.status, path).toBe(404);
+    }
   });
 
   it('protects the game routes', async () => {
-    for (const path of ['/api/game/state', '/api/game/history', '/api/profile']) {
-      expect((await request(ctx.app).get(path)).status).toBe(401);
+    for (const path of [
+      '/api/game/state',
+      '/api/game/history',
+      '/api/profile',
+      '/api/leaderboard',
+    ]) {
+      expect((await request(ctx.app).get(path)).status, path).toBe(401);
     }
     const spin = await request(ctx.app)
       .post('/api/game/spin')
@@ -145,22 +131,48 @@ describe.skipIf(!inject('dbAvailable'))('authentication API', () => {
 
   it('blocks state-changing requests from an untrusted origin', async () => {
     const res = await request(ctx.app)
-      .post('/api/auth/login')
-      .set('Origin', 'https://evil.example')
-      .send({ email: 'a@example.com', password: 'x' });
+      .post('/api/auth/guest')
+      .set('Origin', 'https://evil.example');
     expect(res.status).toBe(403);
-  });
-
-  it('rejects oversized bodies', async () => {
-    const res = await request(ctx.app)
-      .post('/api/auth/register')
-      .send({ email: 'a@example.com', username: 'abc', password: 'x'.repeat(50_000) });
-    expect(res.status).toBe(413);
   });
 
   it('returns a JSON 404 for unknown routes', async () => {
     const res = await request(ctx.app).get('/api/nope');
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('NOT_FOUND');
+  });
+});
+
+describe.skipIf(!inject('dbAvailable'))('guest creation is rate limited, resuming is not', () => {
+  it('limits NEW guests per address but lets a returning browser through', async () => {
+    const ctx = createTestContext();
+    try {
+      // Rate limiting is off in the shared test app; build one with it switched on.
+      const { createApp } = await import('../../src/app');
+      const limited = createApp({ prisma: ctx.prisma, env: ctx.env, rateLimit: true });
+
+      const first = await request(limited).post('/api/auth/guest');
+      expect(first.status).toBe(201);
+      const cookie = (first.headers['set-cookie'] as unknown as string[])[0]!.split(';')[0]!;
+
+      // Reloading with the cookie never counts against the limit.
+      for (let i = 0; i < 40; i++) {
+        const res = await request(limited).post('/api/auth/guest').set('Cookie', cookie);
+        expect(res.status).toBe(200);
+      }
+
+      // Creating brand-new guests does: the 30th new one from one address is refused.
+      let refused = 0;
+      for (let i = 0; i < 35; i++) {
+        const res = await request(limited).post('/api/auth/guest');
+        if (res.status === 429) {
+          refused++;
+          expect(res.body.error.code).toBe('AUTH_RATE_LIMITED');
+        }
+      }
+      expect(refused).toBeGreaterThan(0);
+    } finally {
+      await ctx.prisma.$disconnect();
+    }
   });
 });

@@ -7,8 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
  *   E2E_BASE_URL=http://localhost:8080 npm run test:e2e   test an already running deployment
  *   PW_CHANNEL=msedge npm run test:e2e    use an installed Edge/Chrome instead of downloading one
  *
- * They need PostgreSQL with migrations applied and the demo administrator seeded
- * (`npm run db:seed -- --admin-only`).
+ * They need PostgreSQL with the migrations applied (`npm run db:deploy`).
  */
 const external = process.env.E2E_BASE_URL;
 const baseURL = external ?? 'http://localhost:5173';

@@ -100,10 +100,8 @@ jobs:
       - name: Install the Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Apply database migrations and seed the demo administrator
-        run: |
-          npm run db:deploy
-          npm run db:seed -- --admin-only
+      - name: Apply database migrations
+        run: npm run db:deploy
 
       # Playwright starts `npm run dev` (web on :5173, API on :4000) by itself.
       - name: Run the browser tests
@@ -153,14 +151,13 @@ jobs:
           curl -fsS "$base/game" | grep -q '<div id="root">'   # single-page-app fallback
           curl -fsS "$base/api/game/config" | grep -q '"demoMode":true'
 
-          # Register, then spin with the auth cookie: proves nginx -> API -> PostgreSQL + migrations.
-          suffix=$(date +%s)
-          curl -fsS -D headers.txt -o register.json -X POST "$base/api/auth/register" \
-            -H 'Content-Type: application/json' -H "Origin: $base" \
-            -d "{\"email\":\"ci_${suffix}@example.com\",\"username\":\"ci_${suffix}\",\"password\":\"CorrectHorse42\"}"
-          grep -q '"role":"PLAYER"' register.json
+          # A new visitor gets a guest player; then spin with its cookie: proves nginx -> API -> PostgreSQL.
+          curl -fsS -D headers.txt -o guest.json -X POST "$base/api/auth/guest" -H "Origin: $base"
+          grep -q '"username":"Guest' guest.json
+          # A second call with the cookie returns the SAME player (no new guest).
           token=$(grep -i '^set-cookie: mjd_token=' headers.txt | sed -E 's/^[Ss]et-[Cc]ookie: (mjd_token=[^;]+);.*/\1/')
           test -n "$token"
+          curl -fsS -X POST "$base/api/auth/guest" -H "Origin: $base" -H "Cookie: $token" | grep -q "$(sed -E 's/.*"id":"([^"]+)".*/\1/' guest.json)"
           curl -fsS -X POST "$base/api/game/spin" \
             -H 'Content-Type: application/json' -H "Origin: $base" -H "Cookie: $token" \
             -d "{\"bet\":20,\"requestId\":\"$(cat /proc/sys/kernel/random/uuid)\"}" | grep -q '"totalWin"'

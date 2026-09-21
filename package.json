@@ -28,7 +28,6 @@
     "db:generate": "npm run db:generate -w @mahjong/api",
     "db:migrate": "npm run db:migrate -w @mahjong/api",
     "db:deploy": "npm run db:deploy -w @mahjong/api",
-    "db:seed": "npm run db:seed -w @mahjong/api --",
     "simulate": "npm run simulate -w @mahjong/api --",
     "assets:generate": "node scripts/generate-assets.mjs",
     "audio:generate": "node scripts/generate-audio.mjs",
