@@ -37,7 +37,7 @@ test.describe('playing the game', () => {
     expect(history.spins[0].bet).toBe(20);
   });
 
-  test('a spin can be skipped and the bet can be changed', async ({ page }) => {
+  test('the bet can be changed and there is no skip button', async ({ page }) => {
     await registerByApi(page);
     await openGame(page);
 
@@ -45,7 +45,7 @@ test.describe('playing the game', () => {
     await expect(page.getByTestId('bet-value')).toHaveText('50');
 
     await spinButton(page).click();
-    await page.getByRole('button', { name: 'SKIP' }).click();
+    await expect(page.getByRole('button', { name: 'SKIP' })).toHaveCount(0);
     await waitForSpinToFinish(page);
 
     const history = await (await page.request.get('/api/game/history?limit=1')).json();

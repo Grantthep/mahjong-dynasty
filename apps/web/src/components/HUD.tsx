@@ -22,10 +22,9 @@ export interface HUDProps {
   autoLimit?: number | null;
   autoLeft?: number | null;
   onAutoLimitChange?: (limit: number | null) => void;
-  /** Turbo plays every animation faster; Skip fast-forwards the spin being shown. */
+  /** Turbo plays every animation faster. */
   turbo?: boolean;
   onTurboChange?: (turbo: boolean) => void;
-  onSkip?: () => void;
 }
 
 /** Balance / Win / Bet read-outs, bet controls and the SPIN button. All values come from the server. */
@@ -45,7 +44,6 @@ export function HUD({
   onAutoLimitChange,
   turbo = false,
   onTurboChange,
-  onSkip,
 }: HUDProps) {
   const t = useT();
   const inFreeSpins = Boolean(freeSpins && freeSpins.remaining > 0);
@@ -53,7 +51,6 @@ export function HUD({
   const betLocked = spinning || inFreeSpins;
   const autoOn = auto;
   const showAuto = Boolean(onAutoToggle);
-  const showSkip = Boolean(onSkip) && spinning;
 
   return (
     <section className={styles.hud} aria-label={t('hud.controls')}>
@@ -135,11 +132,6 @@ export function HUD({
               onClick={() => onTurboChange(!turbo)}
             >
               {t('hud.turbo')}
-            </button>
-          ) : null}
-          {showSkip ? (
-            <button type="button" className={styles.autoButton} onClick={onSkip}>
-              {t('hud.skip')}
             </button>
           ) : null}
         </div>

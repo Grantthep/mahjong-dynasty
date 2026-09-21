@@ -63,7 +63,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - Profile with lifetime stats and recent spins; spin history endpoint
 - Idempotent, transaction-safe spins (double clicks and concurrent requests cannot double-charge)
 - **Auto spin**: one button starts and stops it (choose 10 / 25 / 50 / 100 / until stopped); it also stops by itself on an error or when the balance can't cover the bet
-- **Turbo** (faster animations), **Skip** (fast-forward the spin being shown; Space bar while spinning), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
+- **Turbo** (faster animations; pressing the Space bar while a spin plays fast-forwards it), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
 - **Paytable** in the game (gear-menu or table button) and on the About page, showing the credits paid per way at the bet you pick
 - **English / Chinese (中文)** language switch on every page; the choice is remembered (translations live in `apps/web/src/i18n/translations.ts`)
 - Optional audio (12 sounds) – the game is fully playable if no audio files exist
@@ -346,7 +346,7 @@ npm run test:e2e
 ```
 
 Real-browser tests drive the running site: registering and spinning (the balance on screen must match
-the server), Skip / Turbo, auto spin with pause, resume and stop, the per-bet paytable, the English /
+the server), Turbo, auto spin (one button to start and stop), the per-bet paytable, the English /
 Chinese switch, the leaderboard, and the admin dashboard (players are turned away, the administrator
 gets in). They start `npm run dev` for you, or reuse it when it is already running.
 
@@ -456,7 +456,7 @@ Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-dr
 
 - **Demo maths only** – tuned by simulation, not certified; return varies slightly with bet size
   because winnings are whole credits.
-- Free Spins are auto-played one after another (Turbo and Skip apply to them too).
+- Free Spins are auto-played one after another (Turbo applies to them too).
 - Canvas text (FREE SPINS banner etc.) and page text are translated, but error messages that come from the API and the form validation messages are English only.
 - Placeholder artwork is generated SVG; the CJK glyphs in the tiles rely on system fonts
   (Windows, macOS, Android and iOS all include suitable ones).

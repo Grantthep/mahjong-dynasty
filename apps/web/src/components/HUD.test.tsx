@@ -66,7 +66,7 @@ describe('HUD', () => {
     expect(screen.getByRole('button', { name: 'Increase bet' })).toBeDisabled();
   });
 
-  describe('turbo and skip', () => {
+  describe('turbo', () => {
     const autoHandlers = { onAutoToggle: vi.fn() };
 
     it('toggles turbo and shows its state', async () => {
@@ -78,37 +78,10 @@ describe('HUD', () => {
       expect(onTurboChange).toHaveBeenCalledWith(true);
     });
 
-    it('offers SKIP only while a spin is being shown', async () => {
-      const onSkip = vi.fn();
-      const { rerender } = render(
-        <HUD
-          balance={1000}
-          win={0}
-          bet={20}
-          bets={BET_OPTIONS}
-          spinning={false}
-          onBetChange={vi.fn()}
-          onSpin={vi.fn()}
-          onSkip={onSkip}
-          {...autoHandlers}
-        />,
-      );
+    it('has no SKIP button, not even while a spin is being shown', () => {
+      setup({ spinning: true, onTurboChange: vi.fn(), ...autoHandlers });
       expect(screen.queryByRole('button', { name: 'SKIP' })).not.toBeInTheDocument();
-      rerender(
-        <HUD
-          balance={1000}
-          win={0}
-          bet={20}
-          bets={BET_OPTIONS}
-          spinning
-          onBetChange={vi.fn()}
-          onSpin={vi.fn()}
-          onSkip={onSkip}
-          {...autoHandlers}
-        />,
-      );
-      await userEvent.click(screen.getByRole('button', { name: 'SKIP' }));
-      expect(onSkip).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('button', { name: 'TURBO' })).toBeInTheDocument();
     });
   });
 

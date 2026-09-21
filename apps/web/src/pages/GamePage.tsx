@@ -71,7 +71,7 @@ export default function GamePage() {
   const mountedRef = useRef(true);
   const nextSpinTimer = useRef<number | null>(null);
   const spinRef = useRef<() => Promise<void>>(async () => undefined);
-  /** The player pressed Skip during the spin being shown. */
+  /** The player fast-forwarded (Space bar) the spin being shown. */
   const skippedRef = useRef(false);
 
   const [engineReady, setEngineReady] = useState(false);
@@ -321,11 +321,6 @@ export default function GamePage() {
     void spinRef.current(); // no-op if a spin is already in progress; that spin will chain the next
   };
 
-  const skipSpin = () => {
-    skippedRef.current = true;
-    controllerRef.current?.skip();
-  };
-
   /* Space bar spins (unless a control has focus). */
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -451,7 +446,6 @@ export default function GamePage() {
         onAutoLimitChange={(limit) => useGameStore.getState().setAutoLimit(limit)}
         turbo={turbo}
         onTurboChange={(next) => useGameStore.getState().setTurbo(next)}
-        onSkip={skipSpin}
       />
 
       <PaytableModal
