@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useT } from '../i18n';
+import { LanguageSwitch } from './LanguageSwitch';
 import styles from './SettingsPanel.module.css';
 
 interface Props {
@@ -13,6 +15,7 @@ interface Props {
   onVolumeChange: (volume: number) => void;
   onMusicVolumeChange: (volume: number) => void;
   onSfxVolumeChange: (volume: number) => void;
+  onOpenPaytable?: () => void;
   onLogout: () => void;
 }
 
@@ -28,90 +31,89 @@ export function SettingsPanel({
   onVolumeChange,
   onMusicVolumeChange,
   onSfxVolumeChange,
+  onOpenPaytable,
   onLogout,
 }: Props) {
+  const t = useT();
   if (!open) return null;
+
+  const slider = (
+    label: string,
+    ariaLabel: string,
+    value: number,
+    onChange: (next: number) => void,
+  ) => (
+    <label className={styles.row}>
+      <span>{label}</span>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={Math.round(value * 100)}
+        disabled={muted}
+        onChange={(event) => onChange(Number(event.target.value) / 100)}
+        aria-label={ariaLabel}
+      />
+    </label>
+  );
+
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div
         className={styles.panel}
         role="dialog"
         aria-modal="true"
-        aria-label="Settings"
+        aria-label={t('settings.title')}
         onClick={(event) => event.stopPropagation()}
       >
         <header>
-          <h2>Settings</h2>
+          <h2>{t('settings.title')}</h2>
           <button
             type="button"
             className={styles.close}
-            aria-label="Close settings"
+            aria-label={t('settings.close')}
             onClick={onClose}
           >
             ×
           </button>
         </header>
 
-        {username ? <p className={styles.user}>Playing as {username}</p> : null}
+        {username ? (
+          <p className={styles.user}>{t('settings.playingAs', { name: username })}</p>
+        ) : null}
 
         <label className={styles.row}>
-          <span>Sound</span>
+          <span>{t('settings.sound')}</span>
           <input
             type="checkbox"
             checked={!muted}
             onChange={(event) => onMutedChange(!event.target.checked)}
-            aria-label="Sound on"
+            aria-label={t('settings.soundOn')}
           />
         </label>
-        <label className={styles.row}>
-          <span>Master volume</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={Math.round(volume * 100)}
-            disabled={muted}
-            onChange={(event) => onVolumeChange(Number(event.target.value) / 100)}
-            aria-label="Volume"
-          />
-        </label>
-        <label className={styles.row}>
-          <span>Music</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={Math.round(musicVolume * 100)}
-            disabled={muted}
-            onChange={(event) => onMusicVolumeChange(Number(event.target.value) / 100)}
-            aria-label="Music volume"
-          />
-        </label>
-        <label className={styles.row}>
-          <span>Effects</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={Math.round(sfxVolume * 100)}
-            disabled={muted}
-            onChange={(event) => onSfxVolumeChange(Number(event.target.value) / 100)}
-            aria-label="Effects volume"
-          />
-        </label>
+        {slider(t('settings.master'), 'Volume', volume, onVolumeChange)}
+        {slider(t('settings.music'), 'Music volume', musicVolume, onMusicVolumeChange)}
+        {slider(t('settings.effects'), 'Effects volume', sfxVolume, onSfxVolumeChange)}
+        <div className={styles.row}>
+          <span>{t('lang.label')}</span>
+          <LanguageSwitch />
+        </div>
 
         <nav className={styles.links}>
-          <Link to="/profile">Profile &amp; history</Link>
-          <Link to="/about">About &amp; paytable</Link>
-          <Link to="/">Home</Link>
+          {onOpenPaytable ? (
+            <button type="button" className={styles.linkButton} onClick={onOpenPaytable}>
+              {t('settings.paytable')}
+            </button>
+          ) : null}
+          <Link to="/profile">{t('settings.profile')}</Link>
+          <Link to="/about">{t('settings.about')}</Link>
+          <Link to="/">{t('common.home')}</Link>
           <button type="button" className={styles.logout} onClick={onLogout}>
-            Log out
+            {t('common.logOut')}
           </button>
         </nav>
 
-        <p className={styles.note}>
-          Virtual DEMO CREDITS only. No deposits, withdrawals or real-money wagering.
-        </p>
+        <p className={styles.note}>{t('settings.note')}</p>
       </div>
     </div>
   );

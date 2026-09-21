@@ -3,12 +3,14 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { loginSchema } from '@mahjong/shared';
 import { LoadingScreen } from '../components/StatusScreens';
 import { useLogin, useMe } from '../hooks/useAuth';
+import { useT } from '../i18n';
 import { PageLayout } from '../layouts/PageLayout';
 import styles from './AuthForm.module.css';
 
 type FieldErrors = Partial<Record<'email' | 'password', string>>;
 
 export default function LoginPage() {
+  const t = useT();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/game';
@@ -41,12 +43,12 @@ export default function LoginPage() {
   return (
     <PageLayout>
       <div className={styles.card}>
-        <h1>Welcome back</h1>
-        <p className={styles.lead}>Log in to enter the palace.</p>
+        <h1>{t('auth.welcomeBack')}</h1>
+        <p className={styles.lead}>{t('auth.loginLead')}</p>
 
         <form className={styles.form} onSubmit={onSubmit} noValidate>
           <div className="field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.email')}</label>
             <input
               id="email"
               type="email"
@@ -61,7 +63,7 @@ export default function LoginPage() {
             </span>
           </div>
           <div className="field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.password')}</label>
             <input
               id="password"
               type="password"
@@ -83,15 +85,15 @@ export default function LoginPage() {
           ) : null}
 
           <button type="submit" className="btn primary" disabled={login.isPending}>
-            {login.isPending ? 'Logging in…' : 'Log in'}
+            {login.isPending ? t('auth.loggingIn') : t('common.logIn')}
           </button>
         </form>
 
         <p className={styles.alt}>
-          New here? <Link to="/register">Create a free demo account</Link>
+          {t('auth.newHere')} <Link to="/register">{t('auth.createFree')}</Link>
         </p>
         <p className={styles.demoHint}>
-          Seeded demo account: <code>demo@mahjong.local</code> / <code>Demo1234!</code>
+          {t('auth.seeded')} <code>demo@mahjong.local</code> / <code>Demo1234!</code>
         </p>
       </div>
     </PageLayout>

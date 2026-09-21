@@ -1,17 +1,20 @@
 import { Link } from 'react-router-dom';
+import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Logo } from '../components/Logo';
 import { PalaceBackground } from '../components/PalaceBackground';
 import { useLogout, useMe } from '../hooks/useAuth';
+import { useT, type TranslationKey } from '../i18n';
 import styles from './LandingPage.module.css';
 
-const FEATURES = [
-  { title: 'CASCADING WINS', image: '/assets/symbols/red-dragon.svg' },
-  { title: 'DRAGON FORTUNE', image: '/assets/ui/dragon-icon.svg' },
-  { title: 'GOLDEN WILDS', image: '/assets/symbols/wild-dragon.svg' },
-  { title: 'FREE SPINS', image: '/assets/symbols/lotus-scatter.svg' },
+const FEATURES: { title: TranslationKey; image: string }[] = [
+  { title: 'landing.feature.cascade', image: '/assets/symbols/red-dragon.svg' },
+  { title: 'landing.feature.dragon', image: '/assets/ui/dragon-icon.svg' },
+  { title: 'landing.feature.wilds', image: '/assets/symbols/wild-dragon.svg' },
+  { title: 'landing.feature.free', image: '/assets/symbols/lotus-scatter.svg' },
 ];
 
 export default function LandingPage() {
+  const t = useT();
   const me = useMe();
   const logout = useLogout();
 
@@ -20,20 +23,21 @@ export default function LandingPage() {
       <PalaceBackground />
 
       <header className={styles.top}>
-        <span className="demo-badge">DEMO MODE</span>
+        <span className="demo-badge">{t('common.demoMode')}</span>
         <nav aria-label="Account">
-          <Link to="/about">About</Link>
+          <LanguageSwitch />
+          <Link to="/about">{t('common.about')}</Link>
           {me.data ? (
             <>
               <Link to="/profile">{me.data.username}</Link>
               <button type="button" className={styles.linkButton} onClick={() => logout.mutate()}>
-                Log out
+                {t('common.logOut')}
               </button>
             </>
           ) : (
             <>
-              <Link to="/login">Log in</Link>
-              <Link to="/register">Register</Link>
+              <Link to="/login">{t('common.logIn')}</Link>
+              <Link to="/register">{t('common.register')}</Link>
             </>
           )}
         </nav>
@@ -41,25 +45,22 @@ export default function LandingPage() {
 
       <main className={styles.hero}>
         <Logo size="lg" as="h1" />
-        <p className={styles.tagline}>A mystical Mahjong adventure awaits.</p>
+        <p className={styles.tagline}>{t('landing.tagline')}</p>
         <Link to="/game" className={`btn primary ${styles.cta}`}>
-          Enter Game
+          {t('landing.enter')}
         </Link>
 
         <ul className={styles.features}>
           {FEATURES.map((feature) => (
             <li key={feature.title}>
               <img src={feature.image} alt="" width={44} height={48} draggable={false} />
-              <span>{feature.title}</span>
+              <span>{t(feature.title)}</span>
             </li>
           ))}
         </ul>
       </main>
 
-      <footer className={styles.footer}>
-        DEMO MODE · virtual DEMO CREDITS only · no deposits, withdrawals, payments or real-money
-        wagering
-      </footer>
+      <footer className={styles.footer}>{t('landing.footer')}</footer>
     </div>
   );
 }

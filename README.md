@@ -61,6 +61,8 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - Idempotent, transaction-safe spins (double clicks and concurrent requests cannot double-charge)
 - **Auto spin** with PAUSE / RESUME and STOP AUTO; it stops by itself on an error or when the balance can't cover the bet
 - **Turbo** (faster animations), **Skip** (fast-forward the spin being shown; Space bar while spinning), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
+- **Paytable** in the game (gear-menu or table button) and on the About page, showing the credits paid per way at the bet you pick
+- **English / Chinese (中文)** language switch on every page; the choice is remembered (translations live in `apps/web/src/i18n/translations.ts`)
 - Optional audio (12 sounds) – the game is fully playable if no audio files exist
 - Responsive: 1920×1080, 1366×768, tablet, mobile portrait and landscape
 - RTP / hit-frequency **simulator** (`npm run simulate`)

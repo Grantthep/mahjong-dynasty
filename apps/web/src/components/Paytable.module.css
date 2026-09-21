@@ -1,0 +1,72 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.lead,
+.note {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+.bets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.betLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+.betButton {
+  min-width: 52px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(214, 168, 75, 0.45);
+  background: rgba(6, 21, 18, 0.65);
+  color: var(--gold-light);
+  font-family: var(--font-display);
+  font-weight: 700;
+  cursor: pointer;
+}
+.betButton:hover {
+  box-shadow: 0 0 12px rgba(214, 168, 75, 0.35);
+}
+.active {
+  background: linear-gradient(180deg, var(--jade-light), var(--jade-dark));
+  border-color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(242, 210, 124, 0.45);
+}
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  padding: 0.45rem 0.6rem;
+  text-align: right;
+  border-bottom: 1px solid rgba(214, 168, 75, 0.15);
+  white-space: nowrap;
+}
+.table thead th {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  font-weight: 400;
+}
+.table th:first-child {
+  text-align: left;
+}
+.symbolCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 400;
+}

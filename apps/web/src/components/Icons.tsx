@@ -19,6 +19,15 @@ export function GearIcon({ size = 22 }: IconProps) {
   );
 }
 
+export function PaytableIcon({ size = 22 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...base}>
+      <rect x="4" y="4.5" width="16" height="15" rx="2" />
+      <path d="M4 9.5h16M4 14.5h16M10 4.5v15" />
+    </svg>
+  );
+}
+
 export function SoundIcon({ size = 22, muted = false }: IconProps & { muted?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...base}>

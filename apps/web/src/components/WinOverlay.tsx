@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useT } from '../i18n';
 import { formatCredits } from '../utils/format';
 import styles from './WinOverlay.module.css';
 
@@ -23,6 +24,7 @@ const FAST_HOLD_MS = 500;
  * demo credits up. Click to skip the count, click again to continue.
  */
 export function WinOverlay({ title, subtitle, amount, tone = 'big', fast = false, onDone }: Props) {
+  const t = useT();
   const [shown, setShown] = useState(0);
   const finished = useRef(false);
   const doneRef = useRef(onDone);
@@ -83,9 +85,9 @@ export function WinOverlay({ title, subtitle, amount, tone = 'big', fast = false
         <div className={styles.amount} aria-live="polite">
           {formatCredits(shown)}
         </div>
-        <div className={styles.unit}>DEMO CREDITS</div>
+        <div className={styles.unit}>{t('common.demoCredits')}</div>
         {subtitle ? <div className={styles.subtitle}>{subtitle}</div> : null}
-        <div className={styles.hint}>Click to continue</div>
+        <div className={styles.hint}>{t('win.continue')}</div>
       </div>
     </div>
   );

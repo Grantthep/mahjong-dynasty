@@ -1,3 +1,4 @@
+import { useT } from '../i18n';
 import { formatCredits } from '../utils/format';
 import styles from './HUD.module.css';
 
@@ -12,6 +13,7 @@ interface Props {
 
 /** One half of the bet selector; a "−" on the left of SPIN and a "+" on the right. */
 export function BetButton({ bet, bets, disabled = false, onChange, side }: Props) {
+  const t = useT();
   const index = bets.indexOf(bet);
   const step = side === 'decrease' ? -1 : 1;
   const target = bets[index + step];
@@ -21,7 +23,7 @@ export function BetButton({ bet, bets, disabled = false, onChange, side }: Props
     <button
       type="button"
       className={styles.round}
-      aria-label={side === 'decrease' ? 'Decrease bet' : 'Increase bet'}
+      aria-label={side === 'decrease' ? t('hud.decreaseBet') : t('hud.increaseBet')}
       disabled={disabled || atLimit}
       onClick={() => {
         if (target !== undefined) onChange(target);
@@ -33,9 +35,10 @@ export function BetButton({ bet, bets, disabled = false, onChange, side }: Props
 }
 
 export function BetValue({ bet }: { bet: number }) {
+  const t = useT();
   return (
-    <div className={styles.stat} role="group" aria-label="Bet">
-      <span className={styles.label}>BET</span>
+    <div className={styles.stat} role="group" aria-label={t('hud.bet')}>
+      <span className={styles.label}>{t('hud.bet')}</span>
       <span className={styles.value} data-testid="bet-value">
         {formatCredits(bet)}
       </span>

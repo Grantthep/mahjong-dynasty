@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { registerSchema } from '@mahjong/shared';
 import { LoadingScreen } from '../components/StatusScreens';
 import { useMe, useRegister } from '../hooks/useAuth';
+import { useT } from '../i18n';
 import { PageLayout } from '../layouts/PageLayout';
 import styles from './AuthForm.module.css';
 
@@ -10,6 +11,7 @@ type FieldName = 'email' | 'username' | 'password';
 type FieldErrors = Partial<Record<FieldName, string>>;
 
 export default function RegisterPage() {
+  const t = useT();
   const navigate = useNavigate();
   const me = useMe();
   const register = useRegister();
@@ -65,13 +67,13 @@ export default function RegisterPage() {
   return (
     <PageLayout>
       <div className={styles.card}>
-        <h1>Create your account</h1>
-        <p className={styles.lead}>Start with 10,000 DEMO CREDITS. No payment needed, ever.</p>
+        <h1>{t('auth.createAccount')}</h1>
+        <p className={styles.lead}>{t('auth.registerLead')}</p>
 
         <form className={styles.form} onSubmit={onSubmit} noValidate>
-          {field('email', 'Email', 'email', email, setEmail, 'email')}
-          {field('username', 'Username', 'text', username, setUsername, 'username')}
-          {field('password', 'Password', 'password', password, setPassword, 'new-password')}
+          {field('email', t('auth.email'), 'email', email, setEmail, 'email')}
+          {field('username', t('auth.username'), 'text', username, setUsername, 'username')}
+          {field('password', t('auth.password'), 'password', password, setPassword, 'new-password')}
 
           {register.isError ? (
             <div className="alert" role="alert">
@@ -80,12 +82,12 @@ export default function RegisterPage() {
           ) : null}
 
           <button type="submit" className="btn primary" disabled={register.isPending}>
-            {register.isPending ? 'Creating account…' : 'Create account'}
+            {register.isPending ? t('auth.creating') : t('auth.createButton')}
           </button>
         </form>
 
         <p className={styles.alt}>
-          Already registered? <Link to="/login">Log in</Link>
+          {t('auth.already')} <Link to="/login">{t('common.logIn')}</Link>
         </p>
       </div>
     </PageLayout>

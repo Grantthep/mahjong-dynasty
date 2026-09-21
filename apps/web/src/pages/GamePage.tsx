@@ -2,16 +2,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { gameApi } from '../api/endpoints';
-import { GearIcon, SoundIcon } from '../components/Icons';
+import { GearIcon, PaytableIcon, SoundIcon } from '../components/Icons';
 import { HUD } from '../components/HUD';
+import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Logo } from '../components/Logo';
 import { PalaceBackground } from '../components/PalaceBackground';
+import { PaytableModal } from '../components/PaytableModal';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { ErrorScreen, LoadingScreen } from '../components/StatusScreens';
 import { WinOverlay } from '../components/WinOverlay';
 import { GameController } from '../game/GameController';
 import { useLogout, useMe } from '../hooks/useAuth';
 import { useGameConfig, useGameState } from '../hooks/useGameData';
+import { translate, useLanguage, useT, type TranslationKey } from '../i18n';
 import { useGameStore } from '../store/gameStore';
 import { uuid } from '../utils/format';
 import styles from './GamePage.module.css';
@@ -25,11 +28,20 @@ interface OverlayInfo {
   resolve: () => void;
 }
 
-const TIER_TITLE = { big: 'BIG WIN', mega: 'MEGA WIN', epic: 'EPIC WIN' } as const;
+const TIER_TITLE: Record<'big' | 'mega' | 'epic', TranslationKey> = {
+  big: 'win.big',
+  mega: 'win.mega',
+  epic: 'win.epic',
+};
+
+/** Translates outside React render (spin callbacks), always using the language chosen right now. */
+const tr = (key: TranslationKey, params?: Record<string, string | number>) =>
+  translate(useLanguage.getState().lang, key, params);
 const NEXT_FREE_SPIN_DELAY_MS = 900;
 const TURBO_NEXT_SPIN_DELAY_MS = 300;
 
 export default function GamePage() {
+  const t = useT();
   const navigate = useNavigate();
   const config = useGameConfig();
   const gameState = useGameState();
@@ -66,6 +78,7 @@ export default function GamePage() {
   const [engineError, setEngineError] = useState<string | null>(null);
   const [dim, setDim] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [paytableOpen, setPaytableOpen] = useState(false);
   const [overlay, setOverlay] = useState<OverlayInfo | null>(null);
 
   const bootRef = useRef({ config: config.data, state: gameState.data });
@@ -106,7 +119,7 @@ export default function GamePage() {
       })
       .catch((cause: unknown) => {
         if (!cancelled) {
-          setEngineError(cause instanceof Error ? cause.message : 'The game could not start.');
+          setEngineError(cause instanceof Error ? cause.message : tr('status.startFailed'));
         }
       });
 
@@ -181,7 +194,7 @@ export default function GamePage() {
         if (cause.code === 'SPIN_IN_PROGRESS') return;
         useGameStore.getState().setError(cause.message);
       } else {
-        useGameStore.getState().setError('Unexpected error. Please try again.');
+        useGameStore.getState().setError(tr('status.unexpected'));
       }
       await resync();
     },
@@ -233,7 +246,7 @@ export default function GamePage() {
       if (result.bigWinTier !== 'none') {
         void controller.audio.play('big-win');
         await present({
-          title: TIER_TITLE[result.bigWinTier],
+          title: tr(TIER_TITLE[result.bigWinTier]),
           amount: result.totalWin,
           tone: result.bigWinTier,
         });
@@ -241,8 +254,8 @@ export default function GamePage() {
 
       if (result.freeSpinsCompleted) {
         await present({
-          title: 'FREE SPINS COMPLETE',
-          subtitle: 'Total won during Free Spins',
+          title: tr('win.freeComplete'),
+          subtitle: tr('win.freeTotal'),
           amount: result.freeSpinsWinTotal,
           tone: 'free',
         });
@@ -267,7 +280,7 @@ export default function GamePage() {
         const wantsNext = autoNow === 'running' || (freeSpinsLeft && autoNow === 'off');
         if (wantsNext && !freeSpinsLeft && result.balanceAfter < latest.bet) {
           latest.setAuto('off');
-          latest.setError('Auto spin stopped: not enough DEMO CREDITS for this bet.');
+          latest.setError(tr('hud.autoStopped'));
         } else if (wantsNext) {
           nextSpinTimer.current = window.setTimeout(
             () => void spinRef.current(),
@@ -346,7 +359,7 @@ export default function GamePage() {
     const cause = config.error ?? gameState.error;
     return (
       <ErrorScreen
-        message={cause instanceof Error ? cause.message : 'Could not load the game.'}
+        message={cause instanceof Error ? cause.message : t('status.loadFailed')}
         onRetry={() => {
           void config.refetch();
           void gameState.refetch();
@@ -354,7 +367,7 @@ export default function GamePage() {
       />
     );
   }
-  if (!booted || !config.data) return <LoadingScreen label="Entering the palace…" />;
+  if (!booted || !config.data) return <LoadingScreen label={t('status.enterPalace')} />;
 
   const inFreeSpins = session.freeSpinsRemaining > 0;
   const displayBet = inFreeSpins ? session.freeSpinBet : bet;
@@ -369,7 +382,7 @@ export default function GamePage() {
           <button
             type="button"
             className={styles.iconButton}
-            aria-label="Settings"
+            aria-label={t('game.settings')}
             onClick={() => setSettingsOpen(true)}
           >
             <GearIcon />
@@ -377,18 +390,27 @@ export default function GamePage() {
           <button
             type="button"
             className={styles.iconButton}
-            aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+            aria-label={muted ? t('game.unmute') : t('game.mute')}
             aria-pressed={muted}
             onClick={() => useGameStore.getState().setMuted(!muted)}
           >
             <SoundIcon muted={muted} />
+          </button>
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-label={t('game.paytable')}
+            onClick={() => setPaytableOpen(true)}
+          >
+            <PaytableIcon />
           </button>
         </div>
         <div className={styles.logoSlot}>
           <Logo size="md" />
         </div>
         <div className={`${styles.side} ${styles.sideRight}`}>
-          <span className="demo-badge">DEMO MODE</span>
+          <LanguageSwitch />
+          <span className="demo-badge">{t('common.demoMode')}</span>
         </div>
       </header>
 
@@ -396,7 +418,7 @@ export default function GamePage() {
         <div ref={hostRef} className={styles.host} data-testid="game-canvas-host" />
         {!engineReady && !engineError ? (
           <div className={styles.stageMessage} role="status">
-            Preparing the palace…
+            {t('status.preparing')}
           </div>
         ) : null}
         {engineError ? (
@@ -441,7 +463,19 @@ export default function GamePage() {
         onSkip={skipSpin}
       />
 
+      <PaytableModal
+        open={paytableOpen}
+        paytable={config.data.paytable}
+        bets={config.data.bets}
+        bet={displayBet}
+        onClose={() => setPaytableOpen(false)}
+      />
+
       <SettingsPanel
+        onOpenPaytable={() => {
+          setSettingsOpen(false);
+          setPaytableOpen(true);
+        }}
         open={settingsOpen}
         muted={muted}
         volume={volume}

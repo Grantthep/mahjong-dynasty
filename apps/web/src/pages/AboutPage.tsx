@@ -1,113 +1,87 @@
 import { Link } from 'react-router-dom';
-import { REGULAR_SYMBOLS, SYMBOL_META, DEMO_DISCLAIMER } from '@mahjong/shared';
+import { Paytable } from '../components/Paytable';
 import { useGameConfig } from '../hooks/useGameData';
+import { useT } from '../i18n';
 import { PageLayout } from '../layouts/PageLayout';
 import styles from './InfoPages.module.css';
 
-const trim = (value: number) => Number(value.toFixed(3)).toString();
+const ladder = (multipliers: readonly number[]) => multipliers.map((m) => `×${m}`).join(' → ');
+
+/** "Title|rest of the sentence": the part before the bar is shown in bold. */
+function Rule({ text }: { text: string }) {
+  const [title, ...rest] = text.split('|');
+  if (rest.length === 0) return <li>{text}</li>;
+  return (
+    <li>
+      <strong>{title}</strong>
+      {rest.join('|')}
+    </li>
+  );
+}
 
 export default function AboutPage() {
+  const t = useT();
   const config = useGameConfig();
+  const data = config.data;
+
+  const awards = data
+    ? data.freeSpinAwards
+        .map((award) =>
+          t('about.lotus', {
+            min: award.min,
+            plus: award.min === 5 ? '+' : '',
+            spins: award.spins,
+          }),
+        )
+        .join(', ')
+    : '';
 
   return (
     <PageLayout width="wide">
       <article className={styles.article}>
-        <h1>About Mahjong Dynasty</h1>
-        <p className={styles.lead}>
-          A mystical, ancient Chinese-inspired Mahjong palace where a Golden Dragon controls
-          fortune. This is a full-stack browser demo: the server decides every result, the browser
-          only animates it.
-        </p>
+        <h1>{t('about.title')}</h1>
+        <p className={styles.lead}>{t('about.lead')}</p>
 
-        <section className={styles.notice}>{DEMO_DISCLAIMER}</section>
+        <section className={styles.notice}>{t('common.demoDisclaimer')}</section>
 
         <section>
-          <h2>How it plays</h2>
+          <h2>{t('about.howTo')}</h2>
           <ul className={styles.list}>
-            <li>
-              <strong>Ways to win.</strong> Match a symbol on 3 or more adjacent reels starting from
-              the leftmost reel. Every matching tile on a reel multiplies your ways.
-            </li>
-            <li>
-              <strong>Cascading wins.</strong> Winning tiles vanish, the rest fall and new tiles
-              drop in. Each consecutive cascade raises the multiplier
-              {config.data
-                ? ` (${config.data.multipliers.base.map((m) => `×${m}`).join(' → ')})`
-                : ''}
-              .
-            </li>
-            <li>
-              <strong>Dragon Fortune.</strong> Every winning cascade fills the meter. At 100% the
-              Golden Dragon sweeps the board and turns 3–6 tiles into Wilds.
-            </li>
-            <li>
-              <strong>Golden Wilds</strong> substitute for every regular symbol (not for the Lotus).
-            </li>
-            <li>
-              <strong>Free Spins.</strong> Land 3 or more Lotus Scatters anywhere.
-              {config.data
-                ? ` ${config.data.freeSpinAwards.map((a) => `${a.min}${a.min === 5 ? '+' : ''} Lotus = ${a.spins} spins`).join(', ')}. `
-                : ' '}
-              Free Spins use bigger multipliers
-              {config.data
-                ? ` (${config.data.multipliers.freeSpins.map((m) => `×${m}`).join(' → ')})`
-                : ''}
-              , and your progress is saved even if you refresh.
-            </li>
+            <Rule text={t('about.ways')} />
+            <Rule
+              text={t('about.cascades', { ladder: data ? ladder(data.multipliers.base) : '' })}
+            />
+            <Rule text={t('about.dragon')} />
+            <Rule text={t('about.wilds')} />
+            <Rule
+              text={t('about.free', {
+                awards,
+                ladder: data ? ladder(data.multipliers.freeSpins) : '',
+              })}
+            />
           </ul>
         </section>
 
         <section>
-          <h2>Paytable</h2>
-          <p className={styles.muted}>
-            Credits paid <em>per way</em> as a multiple of your bet, by number of reels matched.
-          </p>
+          <h2>{t('paytable.title')}</h2>
           {config.isPending ? (
-            <p className={styles.muted}>Loading…</p>
+            <p className={styles.muted}>{t('common.loading')}</p>
           ) : config.isError ? (
-            <p className="alert">Could not load the paytable. Is the API running?</p>
+            <p className="alert">{t('paytable.failed')}</p>
           ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th scope="col">Symbol</th>
-                    {[3, 4, 5, 6].map((reels) => (
-                      <th key={reels} scope="col">
-                        {reels} reels
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...REGULAR_SYMBOLS].reverse().map((symbol) => (
-                    <tr key={symbol}>
-                      <th scope="row" className={styles.symbolCell}>
-                        <img src={SYMBOL_META[symbol].asset} alt="" width={30} height={33} />
-                        {SYMBOL_META[symbol].name}
-                      </th>
-                      {[3, 4, 5, 6].map((reels) => (
-                        <td key={reels}>×{trim(config.data.paytable[symbol]?.[reels] ?? 0)}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Paytable paytable={config.data.paytable} bets={config.data.bets} />
           )}
         </section>
 
         <p className={styles.actions}>
           <Link to="/game" className="btn primary">
-            Enter game
+            {t('common.enterGame')}
           </Link>
           <Link to="/" className="btn ghost">
-            Home
+            {t('common.home')}
           </Link>
         </p>
-        <p className={styles.muted}>
-          FOR DEVELOPMENT / DEMONSTRATION ONLY. NOT CERTIFIED GAME MATH.
-        </p>
+        <p className={styles.muted}>{t('common.notCertified')}</p>
       </article>
     </PageLayout>
   );

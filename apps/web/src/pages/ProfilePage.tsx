@@ -2,29 +2,31 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ErrorScreen, LoadingScreen } from '../components/StatusScreens';
 import { useLogout } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useGameData';
+import { useT } from '../i18n';
 import { PageLayout } from '../layouts/PageLayout';
 import { formatCredits, formatDateTime } from '../utils/format';
 import styles from './InfoPages.module.css';
 
 export default function ProfilePage() {
+  const t = useT();
   const navigate = useNavigate();
   const profile = useProfile();
   const logout = useLogout();
 
-  if (profile.isPending) return <LoadingScreen label="Loading your profile…" />;
+  if (profile.isPending) return <LoadingScreen label={t('status.loadProfile')} />;
   if (profile.isError) {
     return <ErrorScreen message={profile.error.message} onRetry={() => void profile.refetch()} />;
   }
 
   const { user, stats, recentSpins } = profile.data;
   const cards: [string, string][] = [
-    ['Demo Balance', formatCredits(user.demoBalance)],
-    ['Total Spins', formatCredits(stats.totalSpins)],
-    ['Total Demo Credits Bet', formatCredits(stats.totalBet)],
-    ['Total Demo Credits Won', formatCredits(stats.totalWon)],
-    ['Largest Demo Win', formatCredits(stats.largestWin)],
-    ['Free Spins Triggered', formatCredits(stats.freeSpinsTriggered)],
-    ['Dragon Fortune Triggers', formatCredits(stats.dragonFortuneTriggers)],
+    [t('profile.balance'), formatCredits(user.demoBalance)],
+    [t('profile.totalSpins'), formatCredits(stats.totalSpins)],
+    [t('profile.totalBet'), formatCredits(stats.totalBet)],
+    [t('profile.totalWon'), formatCredits(stats.totalWon)],
+    [t('profile.largest'), formatCredits(stats.largestWin)],
+    [t('profile.freeTriggered'), formatCredits(stats.freeSpinsTriggered)],
+    [t('profile.dragonTriggers'), formatCredits(stats.dragonFortuneTriggers)],
   ];
 
   return (
@@ -32,7 +34,9 @@ export default function ProfilePage() {
       <article className={styles.article}>
         <h1>{user.username}</h1>
         <p className={styles.muted}>
-          {user.email} · member since {new Date(user.createdAt).toLocaleDateString()} · DEMO MODE
+          {user.email} ·{' '}
+          {t('profile.member', { date: new Date(user.createdAt).toLocaleDateString() })} ·{' '}
+          {t('common.demoMode')}
         </p>
 
         <div className={styles.statsGrid}>
@@ -44,20 +48,20 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        <h2>Recent Spins</h2>
+        <h2>{t('profile.recent')}</h2>
         {recentSpins.length === 0 ? (
-          <p className={styles.muted}>No spins yet. Head to the game and press SPIN.</p>
+          <p className={styles.muted}>{t('profile.none')}</p>
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th scope="col">Time</th>
-                  <th scope="col">Bet</th>
-                  <th scope="col">Win</th>
-                  <th scope="col">Cascades</th>
-                  <th scope="col">Balance</th>
-                  <th scope="col">Notes</th>
+                  <th scope="col">{t('profile.time')}</th>
+                  <th scope="col">{t('profile.colBet')}</th>
+                  <th scope="col">{t('profile.colWin')}</th>
+                  <th scope="col">{t('profile.cascades')}</th>
+                  <th scope="col">{t('profile.colBalance')}</th>
+                  <th scope="col">{t('profile.notes')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -71,12 +75,16 @@ export default function ProfilePage() {
                     <td>{spin.cascadeCount}</td>
                     <td>{formatCredits(spin.balanceAfter)}</td>
                     <td>
-                      {spin.isFreeSpin ? <span className={styles.tag}>FREE SPIN</span> : null}{' '}
+                      {spin.isFreeSpin ? (
+                        <span className={styles.tag}>{t('profile.tagFree')}</span>
+                      ) : null}{' '}
                       {spin.freeSpinsAwarded > 0 ? (
-                        <span className={styles.tag}>+{spin.freeSpinsAwarded} FREE SPINS</span>
+                        <span className={styles.tag}>
+                          {t('profile.tagAwarded', { count: spin.freeSpinsAwarded })}
+                        </span>
                       ) : null}{' '}
                       {spin.dragonFortuneTriggers > 0 ? (
-                        <span className={styles.tag}>DRAGON</span>
+                        <span className={styles.tag}>{t('profile.tagDragon')}</span>
                       ) : null}
                     </td>
                   </tr>
@@ -88,14 +96,14 @@ export default function ProfilePage() {
 
         <p className={styles.actions}>
           <Link to="/game" className="btn primary">
-            Back to game
+            {t('common.backToGame')}
           </Link>
           <button
             type="button"
             className="btn ghost"
             onClick={() => logout.mutate(undefined, { onSettled: () => navigate('/') })}
           >
-            Log out
+            {t('common.logOut')}
           </button>
         </p>
       </article>

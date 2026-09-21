@@ -73,3 +73,13 @@
   font-size: 0.74rem;
   line-height: 1.4;
 }
+.linkButton {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--gold-light);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
