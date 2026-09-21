@@ -13,6 +13,10 @@ const envSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     /** Reverse proxies in front of the API (e.g. 1 behind nginx). 0 = the API is reached directly. */
     TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
+    /** Rate limits PER VISITOR ADDRESS. People behind one router (an office) share one address. */
+    RATE_LIMIT_REQUESTS_PER_MIN: z.coerce.number().int().min(10).max(100_000).default(300),
+    RATE_LIMIT_SPINS_PER_MIN: z.coerce.number().int().min(10).max(100_000).default(120),
+    RATE_LIMIT_NEW_GUESTS_PER_15_MIN: z.coerce.number().int().min(1).max(100_000).default(30),
   })
   .superRefine((value, ctx) => {
     if (

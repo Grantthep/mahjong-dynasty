@@ -262,15 +262,18 @@ Leave that window open. Do not run A and B at the same time (both use port 5432)
 
 `.env.example` → `.env` (never commit `.env`):
 
-| Variable                    | Meaning                                                                |
-| --------------------------- | ---------------------------------------------------------------------- |
-| `DATABASE_URL`              | PostgreSQL connection string (default matches Docker / embedded setup) |
-| `JWT_SECRET`                | Long random secret (≥ 32 chars in production)                          |
-| `API_PORT`                  | API port (default `4000`)                                              |
-| `WEB_ORIGIN`                | Allowed CORS origin (default `http://localhost:5173`)                  |
-| `NODE_ENV`                  | `development` / `test` / `production`                                  |
-| `TRUST_PROXY` _(optional)_  | Reverse proxies in front of the API (`1` behind nginx; default `0`)    |
-| `VITE_API_URL` _(optional)_ | Absolute API URL for the web build when not using the dev proxy        |
+| Variable                                        | Meaning                                                                |
+| ----------------------------------------------- | ---------------------------------------------------------------------- |
+| `DATABASE_URL`                                  | PostgreSQL connection string (default matches Docker / embedded setup) |
+| `JWT_SECRET`                                    | Long random secret (≥ 32 chars in production)                          |
+| `API_PORT`                                      | API port (default `4000`)                                              |
+| `WEB_ORIGIN`                                    | Allowed CORS origin (default `http://localhost:5173`)                  |
+| `NODE_ENV`                                      | `development` / `test` / `production`                                  |
+| `TRUST_PROXY` _(optional)_                      | Reverse proxies in front of the API (`1` behind nginx; default `0`)    |
+| `RATE_LIMIT_REQUESTS_PER_MIN` _(optional)_      | Requests per visitor address per minute (default `300`)                |
+| `RATE_LIMIT_SPINS_PER_MIN` _(optional)_         | Spins per visitor address per minute (default `120`)                   |
+| `RATE_LIMIT_NEW_GUESTS_PER_15_MIN` _(optional)_ | New guest players per visitor address per 15 minutes (default `30`)    |
+| `VITE_API_URL` _(optional)_                     | Absolute API URL for the web build when not using the dev proxy        |
 
 ## Database migration
 
@@ -332,16 +335,41 @@ npm run share           :: terminal 2
 After about a minute it prints a public link like `https://something.trycloudflare.com`. Send it to
 anyone: it opens the game on any phone, on any network, with no install and no sign-up.
 
-- It builds the game, starts the API and the built web app on their own ports (4100 / 4173, so it can run
-  next to `npm run dev`) and opens a free [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
+- It builds the game, starts the API and a small web server for the built game on their own ports
+  (4100 / 4173, or the next free ones, so it can run next to `npm run dev`) and opens a free
+  [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
   The first run downloads the official `cloudflared` program into `tools/` (git-ignored).
 - **The link only works while this window stays open and the computer stays awake.** A new link is made
-  every time you start it. Stop with Ctrl+C.
-- The API runs in production mode: it needs a strong `JWT_SECRET` (32+ characters) in `.env`, uses
-  `Secure` cookies and keeps the rate limits on.
-- Demo credits only, no accounts or passwords: anyone with the link can play as a guest, and their spins
-  appear on the same leaderboard as yours. Quick tunnels have no uptime guarantee, so use them for demos.
+  every time you start it. Stop with Ctrl+C. Needs the database running (`npm run db:embedded`).
+- The API runs in production mode: it needs a strong `JWT_SECRET` (32+ characters) in `.env` and uses
+  `Secure` cookies. Demo credits only, no accounts or passwords: anyone with the link can play as a guest,
+  and their spins appear on the same leaderboard as yours.
 - For a link that stays up when your computer is off, deploy it instead (see Docker deployment).
+
+### How many people can play at once?
+
+Measured with simulated players (each spinning every 4 seconds) on a normal Windows PC:
+
+| Simultaneous players | Spins answered | Errors | Typical spin answer |
+| -------------------: | -------------: | -----: | ------------------: |
+|                   50 |    500 in 40 s |      0 |               17 ms |
+|                  200 |  2,000 in 40 s |      0 |               28 ms |
+|                  300 |  2,400 in 30 s |      0 |               25 ms |
+|                  400 |  4,000 in 40 s |      0 |               46 ms |
+
+- **The computer is not the limit: hundreds of people can play at the same time.** What limits a demo is
+  the first visit: a new visitor downloads about **1.5 MB** (0.5 MB of game before the first spin, then
+  about 1 MB of music). After that a spin costs about 2 KB, so playing uses almost no internet.
+- Free Cloudflare quick tunnels never cache files, so every new visitor's first load comes from this
+  computer's home upload. With a 10 Mbit/s upload that is about 1.3 seconds of full speed per new person:
+  30 people opening the link in the same minute is comfortable; a few hundred at once would be slow.
+- **Rate limits are per visitor address.** The share command reads each visitor's real address from the
+  tunnel (`TRUST_PROXY=1`). Without that, everyone would look like one address and share one limit (only 30
+  new players per 15 minutes). People behind ONE router (an office) still count as one address, so the
+  share command raises the limits to 1,500 requests, 600 spins and 150 new players per address (set the
+  `RATE_LIMIT_*` variables to change them).
+- Free quick tunnels have no uptime guarantee: in testing the link once stopped answering for about 30
+  seconds and then came back. Open it on your own phone before a demo.
 
 ## Testing
 

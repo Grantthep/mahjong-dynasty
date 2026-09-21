@@ -17,6 +17,7 @@ import { createServer, connect } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureCloudflared } from './get-cloudflared.mjs';
+import { startShareServer } from './share-server.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 // Preferred ports; if one is busy (for example another `npm run share` is running) the next free one is used.
@@ -27,6 +28,7 @@ let API_PORT = PREFERRED_API_PORT;
 let LOCAL = `http://localhost:${WEB_PORT}`;
 
 const children = [];
+const servers = [];
 let stopping = false;
 
 function stopAll(code = 0) {
@@ -43,6 +45,7 @@ function stopAll(code = 0) {
       // already gone
     }
   }
+  for (const server of servers) server.close();
   process.exit(code);
 }
 process.on('SIGINT', () => stopAll(0));
@@ -137,25 +140,27 @@ async function main() {
     NODE_ENV: 'production',
     API_PORT: String(API_PORT),
     WEB_ORIGIN: LOCAL,
+    // Visitors arrive through the tunnel and the preview server, so the API must read each visitor's
+    // real address from X-Forwarded-For (the last entry is added by Cloudflare and cannot be forged).
+    // Without this every visitor looks like the same address and shares ONE set of rate limits:
+    // only 30 new players per 15 minutes and 120 spins per minute for everybody together.
+    TRUST_PROXY: '1',
+    // A demo is often shown by several people on ONE network (they share one address), so allow more
+    // than the everyday limits. Set these yourself to change them.
+    RATE_LIMIT_REQUESTS_PER_MIN: process.env.RATE_LIMIT_REQUESTS_PER_MIN ?? '1500',
+    RATE_LIMIT_SPINS_PER_MIN: process.env.RATE_LIMIT_SPINS_PER_MIN ?? '600',
+    RATE_LIMIT_NEW_GUESTS_PER_15_MIN: process.env.RATE_LIMIT_NEW_GUESTS_PER_15_MIN ?? '150',
   };
   start('api', process.execPath, ['apps/api/dist/server.js'], { env: apiEnv, stdio: 'inherit' });
   // The built web app, with /api forwarded to the API on the same origin (so the guest cookie works).
-  start(
-    'web',
-    process.execPath,
-    [
-      resolve(root, 'node_modules/vite/bin/vite.js'),
-      'preview',
-      '--host',
-      '--port',
-      String(WEB_PORT),
-      '--strictPort',
-    ],
-    {
-      cwd: resolve(root, 'apps/web'),
-      env: { ...process.env, VITE_PROXY_TARGET: `http://localhost:${API_PORT}`, WEB_ORIGIN: LOCAL },
-      stdio: 'inherit',
-    },
+  // Its files carry cache headers, so Cloudflare keeps copies and most visitors never touch this computer.
+  servers.push(
+    await startShareServer({
+      distDir: resolve(root, 'apps/web/dist'),
+      port: WEB_PORT,
+      apiPort: API_PORT,
+      origin: LOCAL,
+    }),
   );
   await waitFor(`${LOCAL}/api/health`, 'The game');
 

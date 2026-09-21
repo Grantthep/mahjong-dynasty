@@ -20,18 +20,42 @@ export interface RateLimiters {
   spin: RequestHandler;
 }
 
-export function createRateLimiters(enabled: boolean): RateLimiters {
+export type RateLimitSettings = Pick<
+  Env,
+  'RATE_LIMIT_REQUESTS_PER_MIN' | 'RATE_LIMIT_SPINS_PER_MIN' | 'RATE_LIMIT_NEW_GUESTS_PER_15_MIN'
+>;
+
+export const DEFAULT_RATE_LIMITS: RateLimitSettings = {
+  RATE_LIMIT_REQUESTS_PER_MIN: 300,
+  RATE_LIMIT_SPINS_PER_MIN: 120,
+  RATE_LIMIT_NEW_GUESTS_PER_15_MIN: 30,
+};
+
+export function createRateLimiters(
+  enabled: boolean,
+  limits: RateLimitSettings = DEFAULT_RATE_LIMITS,
+): RateLimiters {
   const passthrough: RequestHandler = (_req, _res, next) => next();
   if (!enabled) return { global: passthrough, auth: passthrough, spin: passthrough };
   return {
-    global: limiter(60_000, 300, 'RATE_LIMITED', 'Too many requests. Please slow down.'),
+    global: limiter(
+      60_000,
+      limits.RATE_LIMIT_REQUESTS_PER_MIN,
+      'RATE_LIMITED',
+      'Too many requests. Please slow down.',
+    ),
     auth: limiter(
       15 * 60_000,
-      30,
+      limits.RATE_LIMIT_NEW_GUESTS_PER_15_MIN,
       'AUTH_RATE_LIMITED',
       'Too many new players from this address. Try again later.',
     ),
-    spin: limiter(60_000, 120, 'SPIN_RATE_LIMITED', 'Too many spins. Please slow down.'),
+    spin: limiter(
+      60_000,
+      limits.RATE_LIMIT_SPINS_PER_MIN,
+      'SPIN_RATE_LIMITED',
+      'Too many spins. Please slow down.',
+    ),
   };
 }
 

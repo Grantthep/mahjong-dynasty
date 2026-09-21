@@ -39,7 +39,7 @@ export function createApp({ prisma, env, rng, rateLimit }: AppDeps): Express {
   const gameService = new GameService(prisma, rng ?? new CryptoRandomSource());
   const profileService = new ProfileService(prisma);
   const statsController = createStatsController(new LeaderboardService(prisma));
-  const limiters = createRateLimiters(rateLimit ?? env.NODE_ENV !== 'test');
+  const limiters = createRateLimiters(rateLimit ?? env.NODE_ENV !== 'test', env);
 
   app.use(helmet());
   app.use(cors({ origin: env.WEB_ORIGIN, credentials: true }));

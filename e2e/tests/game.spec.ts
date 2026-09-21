@@ -206,16 +206,18 @@ test.describe('sound', () => {
   });
 
   test('entering the game fetches the background music', async ({ page }) => {
-    const music = page.waitForResponse((res) =>
-      /\/assets\/audio\/bgm-main\.(wav|mp3|ogg)$/.test(res.url()),
+    // The game looks for .mp3, then .ogg, then .wav, so a 404 for the first two is normal; what
+    // matters is that one of the formats is found.
+    const music = page.waitForResponse(
+      (res) => /\/assets\/audio\/bgm-main\.(wav|mp3|ogg)$/.test(res.url()) && res.ok(),
     );
     await openGame(page);
     expect((await music).ok()).toBe(true);
 
-    // A spin plays effects; make sure they are fetched without errors.
+    // A spin plays effects; the shipped .wav files must all be found.
     const failures: string[] = [];
     page.on('response', (res) => {
-      if (res.url().includes('/assets/audio/') && !res.ok()) failures.push(res.url());
+      if (/\/assets\/audio\/[\w-]+\.wav$/.test(res.url()) && !res.ok()) failures.push(res.url());
     });
     await spinButton(page).click();
     await waitForSpinToFinish(page);

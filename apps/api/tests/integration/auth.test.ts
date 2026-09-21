@@ -143,6 +143,26 @@ describe.skipIf(!inject('dbAvailable'))('guest players API', () => {
   });
 });
 
+describe.skipIf(!inject('dbAvailable'))('the guest limit can be changed', () => {
+  it('uses RATE_LIMIT_NEW_GUESTS_PER_15_MIN', async () => {
+    const ctx = createTestContext();
+    try {
+      const { createApp } = await import('../../src/app');
+      const strict = createApp({
+        prisma: ctx.prisma,
+        env: { ...ctx.env, RATE_LIMIT_NEW_GUESTS_PER_15_MIN: 3 },
+        rateLimit: true,
+      });
+      const codes: number[] = [];
+      for (let i = 0; i < 5; i++)
+        codes.push((await request(strict).post('/api/auth/guest')).status);
+      expect(codes).toEqual([201, 201, 201, 429, 429]);
+    } finally {
+      await ctx.prisma.$disconnect();
+    }
+  });
+});
+
 describe.skipIf(!inject('dbAvailable'))('guest creation is rate limited, resuming is not', () => {
   it('limits NEW guests per address but lets a returning browser through', async () => {
     const ctx = createTestContext();
