@@ -1,10 +1,13 @@
 import type { SpinHistoryItem } from './game';
 
+export type UserRole = 'PLAYER' | 'ADMIN';
+
 export interface UserDTO {
   id: string;
   email: string;
   username: string;
   demoBalance: number;
+  role: UserRole;
   createdAt: string;
 }
 

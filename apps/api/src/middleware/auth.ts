@@ -1,3 +1,4 @@
+import type { PrismaClient } from '@prisma/client';
 import type { Response, RequestHandler } from 'express';
 import type { TokenService } from '../services/token.service';
 import { Errors } from '../utils/AppError';
@@ -20,6 +21,29 @@ export const requireAuth =
     }
     res.locals.userId = userId;
     next();
+  };
+
+/**
+ * Requires the signed-in user to be an ADMIN. The role is read from the database on every
+ * request (never from the token), so demoting an admin takes effect immediately.
+ * Must run after requireAuth.
+ */
+export const requireAdmin =
+  (prisma: PrismaClient): RequestHandler =>
+  async (_req, res, next) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: getUserId(res) },
+        select: { role: true },
+      });
+      if (user?.role !== 'ADMIN') {
+        next(Errors.forbidden('Administrator access required'));
+        return;
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
   };
 
 export const getUserId = (res: Response): string => {

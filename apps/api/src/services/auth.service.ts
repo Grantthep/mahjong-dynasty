@@ -13,6 +13,7 @@ export const toUserDTO = (user: User): UserDTO => ({
   email: user.email,
   username: user.username,
   demoBalance: user.demoBalance,
+  role: user.role,
   createdAt: user.createdAt.toISOString(),
 });
 

@@ -7,13 +7,16 @@ import type { Env } from './config/env';
 import { createAuthController } from './controllers/auth.controller';
 import { createGameController } from './controllers/game.controller';
 import { createProfileController } from './controllers/profile.controller';
+import { createStatsController } from './controllers/stats.controller';
 import { CryptoRandomSource, type RandomSource } from './game/RandomSource';
-import { requireAuth } from './middleware/auth';
+import { requireAdmin, requireAuth } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { createRateLimiters, requireTrustedOrigin } from './middleware/security';
 import { createApiRouter } from './routes';
+import { AdminService } from './services/admin.service';
 import { AuthService } from './services/auth.service';
 import { GameService } from './services/game.service';
+import { LeaderboardService } from './services/leaderboard.service';
 import { ProfileService } from './services/profile.service';
 import { TokenService } from './services/token.service';
 
@@ -34,6 +37,10 @@ export function createApp({ prisma, env, rng, rateLimit }: AppDeps): Express {
   const authService = new AuthService(prisma, env.BCRYPT_ROUNDS);
   const gameService = new GameService(prisma, rng ?? new CryptoRandomSource());
   const profileService = new ProfileService(prisma);
+  const statsController = createStatsController(
+    new LeaderboardService(prisma),
+    new AdminService(prisma),
+  );
   const limiters = createRateLimiters(rateLimit ?? env.NODE_ENV !== 'test');
 
   app.use(helmet());
@@ -49,7 +56,9 @@ export function createApp({ prisma, env, rng, rateLimit }: AppDeps): Express {
       authController: createAuthController(authService, tokens, env),
       gameController: createGameController(gameService),
       profileController: createProfileController(profileService),
+      statsController,
       requireAuth: requireAuth(tokens),
+      requireAdmin: requireAdmin(prisma),
       limiters,
     }),
   );

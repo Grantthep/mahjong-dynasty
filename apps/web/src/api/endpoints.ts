@@ -1,6 +1,9 @@
 import type {
+  AdminAnalyticsResponse,
   AuthResponse,
   GameStateResponse,
+  LeaderboardPeriod,
+  LeaderboardResponse,
   LoginInput,
   ProfileResponse,
   PublicGameConfig,
@@ -26,6 +29,15 @@ export const gameApi = {
   spin: (request: SpinRequest) =>
     apiFetch<SpinResponse>('/api/game/spin', { method: 'POST', body: request }),
   history: (limit = 20) => apiFetch<SpinHistoryResponse>(`/api/game/history?limit=${limit}`),
+};
+
+export const leaderboardApi = {
+  get: (period: LeaderboardPeriod, limit = 20) =>
+    apiFetch<LeaderboardResponse>(`/api/leaderboard?period=${period}&limit=${limit}`),
+};
+
+export const adminApi = {
+  analytics: () => apiFetch<AdminAnalyticsResponse>('/api/admin/analytics'),
 };
 
 export const profileApi = {

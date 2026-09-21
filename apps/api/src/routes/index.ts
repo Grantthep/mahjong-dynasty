@@ -4,11 +4,13 @@ import {
   registerSchema,
   spinRequestSchema,
   historyQuerySchema,
+  leaderboardQuerySchema,
 } from '@mahjong/shared';
 import type { HealthResponse } from '@mahjong/shared';
 import type { createAuthController } from '../controllers/auth.controller';
 import type { createGameController } from '../controllers/game.controller';
 import type { createProfileController } from '../controllers/profile.controller';
+import type { createStatsController } from '../controllers/stats.controller';
 import { validateBody, validateQuery } from '../middleware/validate';
 import type { RateLimiters } from '../middleware/security';
 
@@ -16,12 +18,22 @@ export interface RouterDeps {
   authController: ReturnType<typeof createAuthController>;
   gameController: ReturnType<typeof createGameController>;
   profileController: ReturnType<typeof createProfileController>;
+  statsController: ReturnType<typeof createStatsController>;
   requireAuth: RequestHandler;
+  requireAdmin: RequestHandler;
   limiters: RateLimiters;
 }
 
 export function createApiRouter(deps: RouterDeps): Router {
-  const { authController, gameController, profileController, requireAuth, limiters } = deps;
+  const {
+    authController,
+    gameController,
+    profileController,
+    statsController,
+    requireAuth,
+    requireAdmin,
+    limiters,
+  } = deps;
   const router = Router();
 
   router.get('/health', (_req, res) => {
@@ -62,6 +74,17 @@ export function createApiRouter(deps: RouterDeps): Router {
 
   // --- profile ---
   router.get('/profile', requireAuth, profileController.get);
+
+  // --- leaderboard (signed-in players) ---
+  router.get(
+    '/leaderboard',
+    requireAuth,
+    validateQuery(leaderboardQuerySchema),
+    statsController.getLeaderboard,
+  );
+
+  // --- admin ---
+  router.get('/admin/analytics', requireAuth, requireAdmin, statsController.getAnalytics);
 
   return router;
 }

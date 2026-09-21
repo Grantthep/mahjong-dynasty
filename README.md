@@ -55,6 +55,8 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **Dragon Fortune** meter → golden dragon sweeps the board and turns 3–6 server-chosen tiles into Wilds
 - **Golden Dragon Wild** and **Lotus Scatter** (3 / 4 / 5+ Lotus = 8 / 12 / 15 Free Spins, retriggers supported)
 - **Wild Reel Respin** – when a Golden Wild lands on the first board it can lock its whole reel as Wilds while the other reels respin once (chance set in `gameConfig.ts`, decided by the server)
+- **Leaderboard** of the biggest single-spin demo wins (all time / last 24 hours, usernames only)
+- **Admin dashboard** (admin role): observed return, player and spin totals, feature counts, a 14-day spins chart with a table view, and top players
 - **Free Spins** stored server-side – refreshing the browser never loses them; the palace transforms into a warm red/gold atmosphere
 - BIG / MEGA / EPIC WIN presentation with count-up (only for large wins)
 - Registration, login, logout (bcrypt + JWT in an **HttpOnly** cookie), protected routes
@@ -190,18 +192,20 @@ Indexes: unique `(userId, requestId)`, `(userId, createdAt desc)`, `(sessionId)`
 
 ## API
 
-| Method & path                     | Auth | Description                                                |
-| --------------------------------- | :--: | ---------------------------------------------------------- |
-| `POST /api/auth/register`         |  –   | Create account (10,000 demo credits), sets HttpOnly cookie |
-| `POST /api/auth/login`            |  –   | Log in, sets HttpOnly cookie                               |
-| `POST /api/auth/logout`           |  –   | Clears the cookie                                          |
-| `GET  /api/auth/me`               |  ✔   | Current user                                               |
-| `GET  /api/game/config`           |  –   | Public game config (bets, multipliers, awards, paytable)   |
-| `GET  /api/game/state`            |  ✔   | Balance, Dragon meter, Free Spins, last board              |
-| `POST /api/game/spin`             |  ✔   | `{ bet, requestId }` → complete spin result                |
-| `GET  /api/game/history?limit=20` |  ✔   | Recent spins                                               |
-| `GET  /api/profile`               |  ✔   | Profile, lifetime stats, recent spins                      |
-| `GET  /api/health`                |  –   | Health check                                               |
+| Method & path                     | Auth  | Description                                                       |
+| --------------------------------- | :---: | ----------------------------------------------------------------- |
+| `POST /api/auth/register`         |   –   | Create account (10,000 demo credits), sets HttpOnly cookie        |
+| `POST /api/auth/login`            |   –   | Log in, sets HttpOnly cookie                                      |
+| `POST /api/auth/logout`           |   –   | Clears the cookie                                                 |
+| `GET  /api/auth/me`               |   ✔   | Current user                                                      |
+| `GET  /api/game/config`           |   –   | Public game config (bets, multipliers, awards, paytable)          |
+| `GET  /api/game/state`            |   ✔   | Balance, Dragon meter, Free Spins, last board                     |
+| `POST /api/game/spin`             |   ✔   | `{ bet, requestId }` → complete spin result                       |
+| `GET  /api/game/history?limit=20` |   ✔   | Recent spins                                                      |
+| `GET  /api/profile`               |   ✔   | Profile, lifetime stats, recent spins                             |
+| `GET  /api/leaderboard`           |   ✔   | Top single-spin wins (`period=all\|day`, `limit`), usernames only |
+| `GET  /api/admin/analytics`       | admin | Totals, 14-day spin series and top players (no emails/balances)   |
+| `GET  /api/health`                |   –   | Health check                                                      |
 
 Errors are always `{ "error": { "code", "message", "details?" } }`.
 
@@ -286,6 +290,20 @@ The seed creates (or resets) the demo account:
 | Username | `demo_player`        |
 | Password | `Demo1234!`          |
 | Balance  | 10,000 DEMO CREDITS  |
+
+In development the seed also creates a **demo administrator** (never in production):
+
+|          |                       |
+| -------- | --------------------- |
+| Email    | `admin@mahjong.local` |
+| Username | `demo_admin`          |
+| Password | `Admin1234!`          |
+
+Log in with it and open **Settings → Admin dashboard** (or `/admin`). Run
+`npm run db:seed -- --admin-only` to create or refresh only the administrator without touching the
+demo player. Everyone who registers is a plain player; the role is stored in the database and is
+checked on every admin request. To promote someone else, set `role = 'ADMIN'` on their `User` row
+(for example with `npm run db:studio -w @mahjong/api`).
 
 Re-running `npm run db:seed` resets that account's balance, Dragon meter, Free Spins and history.
 (There is intentionally no top-up feature: this is not a wallet.)

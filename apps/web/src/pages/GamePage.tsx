@@ -478,6 +478,7 @@ export default function GamePage() {
       />
 
       <SettingsPanel
+        isAdmin={me.data?.role === 'ADMIN'}
         onOpenPaytable={() => {
           setSettingsOpen(false);
           setPaytableOpen(true);

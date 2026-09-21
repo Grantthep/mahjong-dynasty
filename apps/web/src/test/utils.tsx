@@ -57,5 +57,6 @@ export const demoUser = {
   email: 'demo@mahjong.local',
   username: 'demo_player',
   demoBalance: 10_000,
+  role: 'PLAYER' as const,
   createdAt: '2026-01-01T00:00:00.000Z',
 };

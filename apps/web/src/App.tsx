@@ -3,7 +3,9 @@ import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoadingScreen } from './components/StatusScreens';
 import AboutPage from './pages/AboutPage';
+import AdminPage from './pages/AdminPage';
 import LandingPage from './pages/LandingPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProfilePage from './pages/ProfilePage';
@@ -29,6 +31,8 @@ export default function App() {
           }
         />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

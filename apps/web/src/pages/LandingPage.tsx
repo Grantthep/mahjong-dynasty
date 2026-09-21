@@ -29,6 +29,7 @@ export default function LandingPage() {
           <Link to="/about">{t('common.about')}</Link>
           {me.data ? (
             <>
+              <Link to="/leaderboard">{t('nav.leaderboard')}</Link>
               <Link to="/profile">{me.data.username}</Link>
               <button type="button" className={styles.linkButton} onClick={() => logout.mutate()}>
                 {t('common.logOut')}
