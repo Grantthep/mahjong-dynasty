@@ -13,14 +13,18 @@
  * - Demo credits only. Anyone with the link can play as a guest; there are no accounts or passwords.
  */
 import { spawn, spawnSync } from 'node:child_process';
+import { createServer, connect } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureCloudflared } from './get-cloudflared.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const WEB_PORT = Number(process.env.SHARE_WEB_PORT ?? 4173);
-const API_PORT = Number(process.env.SHARE_API_PORT ?? 4100);
-const LOCAL = `http://localhost:${WEB_PORT}`;
+// Preferred ports; if one is busy (for example another `npm run share` is running) the next free one is used.
+const PREFERRED_WEB_PORT = Number(process.env.SHARE_WEB_PORT ?? 4173);
+const PREFERRED_API_PORT = Number(process.env.SHARE_API_PORT ?? 4100);
+let WEB_PORT = PREFERRED_WEB_PORT;
+let API_PORT = PREFERRED_API_PORT;
+let LOCAL = `http://localhost:${WEB_PORT}`;
 
 const children = [];
 let stopping = false;
@@ -58,6 +62,34 @@ function start(name, command, args, options = {}) {
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
+/** True when something already listens on the port (on any address). */
+function portBusy(port) {
+  return new Promise((resolveBusy) => {
+    const probe = createServer();
+    probe.once('error', () => resolveBusy(true));
+    probe.once('listening', () => probe.close(() => resolveBusy(false)));
+    probe.listen(port);
+  });
+}
+
+async function freePort(preferred, avoid = []) {
+  for (let port = preferred; port < preferred + 50; port++) {
+    if (!avoid.includes(port) && !(await portBusy(port))) return port;
+  }
+  throw new Error(`No free port found near ${preferred}.`);
+}
+
+/** Can we reach PostgreSQL? The game cannot start without it. */
+function databaseUp() {
+  return new Promise((resolveUp) => {
+    const socket = connect({ host: '127.0.0.1', port: 5432 });
+    socket.setTimeout(2000);
+    socket.once('connect', () => (socket.destroy(), resolveUp(true)));
+    socket.once('error', () => resolveUp(false));
+    socket.once('timeout', () => (socket.destroy(), resolveUp(false)));
+  });
+}
+
 async function waitFor(url, label, seconds = 90) {
   const deadline = Date.now() + seconds * 1000;
   while (Date.now() < deadline) {
@@ -73,6 +105,24 @@ async function waitFor(url, label, seconds = 90) {
 }
 
 async function main() {
+  if (!(await databaseUp())) {
+    throw new Error(
+      [
+        'The database is not running. Start it first, in another terminal:',
+        '',
+        '    npm run db:embedded',
+        '',
+        'then run "npm run share" again.',
+      ].join('\n'),
+    );
+  }
+  WEB_PORT = await freePort(PREFERRED_WEB_PORT);
+  API_PORT = await freePort(PREFERRED_API_PORT, [WEB_PORT]);
+  LOCAL = `http://localhost:${WEB_PORT}`;
+  if (WEB_PORT !== PREFERRED_WEB_PORT) {
+    console.info(`(Port ${PREFERRED_WEB_PORT} is busy, using ${WEB_PORT} instead.)`);
+  }
+
   console.info('1/4  Building the game (about 20 seconds)...');
   const build = spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit', shell: true });
   if (build.status !== 0) throw new Error('The build failed. Fix the errors above and try again.');
