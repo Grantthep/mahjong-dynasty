@@ -322,6 +322,27 @@ anywhere but `localhost`).
   the game (there are no passwords: anyone who can reach it can play as a guest).
 - To play away from home, deploy it (see Docker deployment) or expose it through a tunnel.
 
+## Sharing a link (phone, anywhere)
+
+```bat
+npm run db:embedded     :: terminal 1, if the database is not running yet
+npm run share           :: terminal 2
+```
+
+After about a minute it prints a public link like `https://something.trycloudflare.com`. Send it to
+anyone: it opens the game on any phone, on any network, with no install and no sign-up.
+
+- It builds the game, starts the API and the built web app on their own ports (4100 / 4173, so it can run
+  next to `npm run dev`) and opens a free [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
+  The first run downloads the official `cloudflared` program into `tools/` (git-ignored).
+- **The link only works while this window stays open and the computer stays awake.** A new link is made
+  every time you start it. Stop with Ctrl+C.
+- The API runs in production mode: it needs a strong `JWT_SECRET` (32+ characters) in `.env`, uses
+  `Secure` cookies and keeps the rate limits on.
+- Demo credits only, no accounts or passwords: anyone with the link can play as a guest, and their spins
+  appear on the same leaderboard as yours. Quick tunnels have no uptime guarantee, so use them for demos.
+- For a link that stays up when your computer is off, deploy it instead (see Docker deployment).
+
 ## Testing
 
 ```bat

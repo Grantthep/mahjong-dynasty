@@ -27,3 +27,6 @@ Thumbs.db
 e2e/test-results/
 e2e/playwright-report/
 e2e/blob-report/
+
+# Downloaded helper programs (cloudflared for `npm run share`)
+tools/

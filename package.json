@@ -33,7 +33,8 @@
     "audio:generate": "node scripts/generate-audio.mjs",
     "postinstall": "npm run db:generate -w @mahjong/api",
     "test:e2e": "npm run test:e2e -w @mahjong/e2e",
-    "dev:phone": "node scripts/dev-lan.mjs"
+    "dev:phone": "node scripts/dev-lan.mjs",
+    "share": "node scripts/share.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
