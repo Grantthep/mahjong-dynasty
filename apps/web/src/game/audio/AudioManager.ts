@@ -11,6 +11,7 @@ export const SOUND_NAMES = [
   'scatter',
   'dragon-fortune',
   'free-spins',
+  'anticipation',
 ] as const;
 
 export type SoundName = (typeof SOUND_NAMES)[number];

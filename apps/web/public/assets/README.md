@@ -9,7 +9,7 @@ public/assets/
 ├── backgrounds/   palace-normal.svg, palace-free.svg
 ├── ui/            logo.svg, dragon-icon.svg, spin-ornament.svg
 ├── effects/       dragon.svg, glow.svg, particle.svg
-└── audio/         12 generated placeholder sounds (.wav) - replace with your own
+└── audio/         13 generated placeholder sounds (.wav) - replace with your own
 ```
 
 > Regenerate the placeholders at any time with `npm run assets:generate` (from the repo root).
@@ -121,20 +121,21 @@ game stays fully playable and silent.
 
 Put files in this folder using **exactly these names**. The game tries `.mp3`, then `.ogg`, then `.wav`:
 
-| Name             | When it plays                     | Type                 |
-| ---------------- | --------------------------------- | -------------------- |
-| `bgm-main`       | Base game background music        | loop, calm           |
-| `bgm-free-spins` | Free Spins background music       | loop, more energetic |
-| `button`         | Buttons / bet changes             | short click          |
-| `spin`           | A spin starts                     | whoosh               |
-| `tile-drop`      | Tiles land (throttled)            | soft clack           |
-| `cascade`        | Second and later winning cascades | rising chime         |
-| `win`            | A win                             | chime                |
-| `big-win`        | BIG / MEGA / EPIC WIN             | fanfare              |
-| `wild`           | Dragon strikes a tile → Wild      | zap / gong           |
-| `scatter`        | Lotus scatters trigger            | shimmer              |
-| `dragon-fortune` | Dragon Fortune starts             | dramatic hit         |
-| `free-spins`     | FREE SPINS banner                 | fanfare              |
+| Name             | When it plays                     | Type                             |
+| ---------------- | --------------------------------- | -------------------------------- |
+| `bgm-main`       | Base game background music        | loop, calm                       |
+| `bgm-free-spins` | Free Spins background music       | loop, more energetic             |
+| `button`         | Buttons / bet changes             | short click                      |
+| `spin`           | A spin starts                     | whoosh                           |
+| `tile-drop`      | Tiles land (throttled)            | soft clack                       |
+| `cascade`        | Second and later winning cascades | rising chime                     |
+| `win`            | A win                             | chime                            |
+| `big-win`        | BIG / MEGA / EPIC WIN             | fanfare                          |
+| `wild`           | Dragon strikes a tile → Wild      | zap / gong                       |
+| `scatter`        | Lotus scatters trigger            | shimmer                          |
+| `dragon-fortune` | Dragon Fortune starts             | dramatic hit                     |
+| `free-spins`     | FREE SPINS banner                 | fanfare                          |
+| `anticipation`   | Two Lotus showing: "one more…"    | heartbeat + rising tension, ~2 s |
 
 Example: `apps/web/public/assets/audio/win.mp3`.
 

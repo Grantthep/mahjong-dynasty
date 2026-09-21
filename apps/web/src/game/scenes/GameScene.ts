@@ -4,12 +4,20 @@ import { delay } from '../animations/tweens';
 import type { AudioManager } from '../audio/AudioManager';
 import { GAME_H, GAME_W, METER_Y, MULTIPLIER_Y, TIMING } from '../config';
 import { DragonEffect } from '../effects/DragonEffect';
+import { AnticipationEffect, type AnticipationHooks } from '../effects/AnticipationEffect';
 import { ScatterEffect, type ScatterHooks } from '../effects/ScatterEffect';
 import { WildReelEffect } from '../effects/WildReelEffect';
 import { WinEffect } from '../effects/WinEffect';
 import { DragonMeter } from '../objects/DragonMeter';
 import { FloatingWinText } from '../objects/FloatingWinText';
 import { GameBoard } from '../objects/GameBoard';
+import {
+  HUNT_SLOW,
+  huntSucceeded,
+  huntingReel,
+  isHunting,
+  scatterPositions,
+} from '../anticipation';
 import { MultiplierDisplay } from '../objects/MultiplierDisplay';
 
 export const READY_EVENT = 'mjd-ready';
@@ -23,10 +31,10 @@ export interface GameInit {
 }
 
 /** Callbacks from the scene back into React (HUD, palace background, dimming). */
-export interface SpinHooks extends Omit<ScatterHooks, 'labels'> {
+export interface SpinHooks extends Omit<ScatterHooks, 'labels'>, Omit<AnticipationHooks, 'labels'> {
   onWin(runningTotal: number): void;
   /** Canvas text in the player's language. */
-  labels: ScatterHooks['labels'] & { wildReel: string };
+  labels: ScatterHooks['labels'] & AnticipationHooks['labels'] & { wildReel: string };
 }
 
 /**
@@ -41,6 +49,7 @@ export class GameScene extends Phaser.Scene {
   private dragonEffect!: DragonEffect;
   private scatterEffect!: ScatterEffect;
   private wildReelEffect!: WildReelEffect;
+  private anticipation!: AnticipationEffect;
   private audio!: AudioManager;
   private playing = false;
   private baseSpeed = 1;
@@ -65,6 +74,7 @@ export class GameScene extends Phaser.Scene {
     this.dragonEffect = new DragonEffect(this, this.board, this.meter, this.audio, this.winEffect);
     this.scatterEffect = new ScatterEffect(this, this.board, this.audio);
     this.wildReelEffect = new WildReelEffect(this, this.board, this.audio, this.winEffect);
+    this.anticipation = new AnticipationEffect(this, this.board, this.audio);
 
     this.game.events.emit(READY_EVENT, this);
   }
@@ -114,7 +124,7 @@ export class GameScene extends Phaser.Scene {
 
       // Old board falls away, the server's board drops in.
       await this.board.dropOut();
-      await this.board.dropIn(result.initialBoard);
+      await this.dropInHunting(result.initialBoard, hooks);
       await delay(this, 180);
 
       // A Wild on the first board can lock its reel; the other reels respin (server's result).
@@ -134,9 +144,20 @@ export class GameScene extends Phaser.Scene {
         hooks.onWin(step.runningWin);
         await this.winEffect.highlight(winning);
 
+        // Two Lotus are showing: hunt for the last one while the replacements fall in slow motion.
+        const hunting = isHunting(step.board);
+        const hunt = hunting
+          ? await this.anticipation.begin(this.board.getTiles(scatterPositions(step.board)), hooks)
+          : null;
+
         // Tiles disappear, survivors fall, replacements from the server drop in.
         await this.board.removeTiles(step.winningPositions);
-        await this.board.applyCollapse(step.moves, step.spawns);
+        await this.board.applyCollapse(
+          step.moves,
+          step.spawns,
+          hunting ? { slow: HUNT_SLOW } : undefined,
+        );
+        await hunt?.end(huntSucceeded(step.boardAfter));
 
         // Dragon Fortune meter fills; at 100% the signature sequence plays.
         await this.meter.setValue(step.meterAfter);
@@ -165,6 +186,24 @@ export class GameScene extends Phaser.Scene {
       this.skipping = false;
       this.applySpeed();
     }
+  }
+
+  /**
+   * Drops a fresh board reel by reel. If the second Lotus lands before the last reel, the reels
+   * that are still to come fall slowly while the game hunts for the third Lotus.
+   */
+  private async dropInHunting(board: Board, hooks: SpinHooks): Promise<void> {
+    const reel = huntingReel(board);
+    if (reel === null) {
+      await this.board.dropIn(board);
+      return;
+    }
+    const all = board.map((_, col) => col);
+    await this.board.dropInReels(board, all.slice(0, reel + 1));
+    const landed = scatterPositions(board).filter((position) => position.col <= reel);
+    const hunt = await this.anticipation.begin(this.board.getTiles(landed), hooks);
+    await this.board.dropInReels(board, all.slice(reel + 1), { slow: HUNT_SLOW });
+    await hunt.end(huntSucceeded(board));
   }
 
   /** Game area size, exposed for tests/tools. */

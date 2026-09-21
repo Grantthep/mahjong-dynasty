@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   currentPlayer,
   hudStatus,
@@ -179,6 +179,7 @@ test.describe('sound', () => {
     'scatter',
     'dragon-fortune',
     'free-spins',
+    'anticipation',
   ];
 
   test('the browser can decode every sound file', async ({ page }) => {
@@ -219,5 +220,98 @@ test.describe('sound', () => {
     await spinButton(page).click();
     await waitForSpinToFinish(page);
     expect(failures).toEqual([]);
+  });
+});
+
+test.describe('suspense when two Lotus are showing', () => {
+  /** Turns the next spin into one with exactly two Lotus and no win, whatever the server rolled. */
+  async function forceTwoLotus(page: Page) {
+    await page.route('**/api/game/spin', async (route) => {
+      const response = await route.fetch();
+      const real = await response.json();
+      const plain = [
+        'circle',
+        'bamboo',
+        'character',
+        'east-wind',
+        'five-character',
+        'eight-character',
+      ];
+      const board = Array.from({ length: 6 }, (_, col) =>
+        Array.from({ length: 4 }, (_, row) => plain[(col + row) % plain.length]),
+      );
+      board[0]![1] = 'lotus-scatter';
+      board[1]![2] = 'lotus-scatter';
+      await route.fulfill({
+        response,
+        json: {
+          ...real,
+          initialBoard: board,
+          finalBoard: board,
+          cascades: [],
+          wildReelRespin: null,
+          totalWin: 0,
+          bigWinTier: 'none',
+          scatterCount: 2,
+          scatterPositions: [
+            { col: 0, row: 1 },
+            { col: 1, row: 2 },
+          ],
+          freeSpinsAwarded: 0,
+          freeSpinsRetriggered: false,
+          freeSpinsCompleted: false,
+          freeSpinsWinTotal: 0,
+          dragonFortuneTriggers: 0,
+          dragonMeterAfter: real.dragonMeterBefore,
+          balanceAfter: real.balanceBefore - real.bet,
+          session: {
+            dragonMeter: real.dragonMeterBefore,
+            freeSpinsRemaining: 0,
+            freeSpinsTotal: 0,
+            freeSpinBet: 0,
+            freeSpinsWin: 0,
+          },
+        },
+      });
+    });
+  }
+
+  test('hunts for the last Lotus, announces it, then goes back to normal', async ({
+    page,
+  }, testInfo) => {
+    await forceTwoLotus(page);
+    await openGame(page);
+    const game = page.locator('[data-hunting]');
+    await expect(game).toHaveAttribute('data-hunting', 'false');
+
+    await spinButton(page).click();
+    await expect(game).toHaveAttribute('data-hunting', 'true', { timeout: 20_000 });
+    await expect(page.getByRole('status').filter({ hasText: 'ONE MORE LOTUS…' })).toHaveCount(1);
+
+    // Keep a picture of the moment (attached to the test report; handy to look at).
+    await page.waitForTimeout(600);
+    const picture = testInfo.outputPath('hunting.png');
+    await page.screenshot({ path: picture });
+    await testInfo.attach('hunting', { path: picture, contentType: 'image/png' });
+
+    // The hunt ends by itself and the game is playable again.
+    await expect(game).toHaveAttribute('data-hunting', 'false', { timeout: 20_000 });
+    await waitForSpinToFinish(page);
+    await expect(page.getByRole('status').filter({ hasText: 'ONE MORE LOTUS…' })).toHaveCount(0);
+  });
+
+  test('says it in Chinese too', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('mjd.lang', 'zh'));
+    await forceTwoLotus(page);
+    await page.goto('/');
+    await expect(page.getByTestId('game-canvas-host').locator('canvas')).toBeVisible({
+      timeout: 30_000,
+    });
+    const spin = page.getByRole('button', { name: '旋转', exact: true });
+    await expect(spin).toBeEnabled({ timeout: 30_000 });
+    await spin.click();
+    await expect(page.getByRole('status').filter({ hasText: '再来一朵莲花…' })).toHaveCount(1, {
+      timeout: 20_000,
+    });
   });
 });

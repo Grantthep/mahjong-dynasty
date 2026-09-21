@@ -237,7 +237,11 @@ export class GameBoard {
   }
 
   /** New tiles drop into the given reels only, one reel after the other. */
-  async dropInReels(board: Board, reels: readonly number[]): Promise<void> {
+  async dropInReels(
+    board: Board,
+    reels: readonly number[],
+    { slow = 1 }: { slow?: number } = {},
+  ): Promise<void> {
     const landing: Promise<void>[] = [];
     reels.forEach((col, position) => {
       const column = board[col];
@@ -245,9 +249,9 @@ export class GameBoard {
       for (let row = ROWS - 1; row >= 0; row--) {
         const symbol = column[row]!;
         const tile = this.createTile(col, row, symbol, tileY(row) - BOARD_H - 70);
-        const order = position * TIMING.colStagger + (ROWS - 1 - row) * TIMING.rowStagger;
+        const order = (position * TIMING.colStagger + (ROWS - 1 - row) * TIMING.rowStagger) * slow;
         landing.push(
-          this.land(tile, tileY(row), TIMING.dropIn + row * 25, order, row === ROWS - 1),
+          this.land(tile, tileY(row), (TIMING.dropIn + row * 25) * slow, order, row === ROWS - 1),
         );
       }
     });
@@ -276,6 +280,8 @@ export class GameBoard {
   async applyCollapse(
     moves: readonly CascadeMove[],
     spawns: readonly CascadeSpawn[],
+    /** slow > 1 plays the fall in slow motion (used while hunting for the last Lotus). */
+    { slow = 1 }: { slow?: number } = {},
   ): Promise<void> {
     const landing: Promise<void>[] = [];
 
@@ -288,7 +294,13 @@ export class GameBoard {
       this.tiles[move.col]![move.toRow] = tile;
       const distance = move.toRow - move.fromRow;
       landing.push(
-        this.land(tile, tileY(move.toRow), TIMING.fall + distance * 45, 0, move.toRow === ROWS - 1),
+        this.land(
+          tile,
+          tileY(move.toRow),
+          (TIMING.fall + distance * 45) * slow,
+          0,
+          move.toRow === ROWS - 1,
+        ),
       );
     });
 
@@ -306,8 +318,8 @@ export class GameBoard {
         this.land(
           tile,
           tileY(spawn.row),
-          TIMING.fall + count * 50,
-          (count - 1 - spawn.row) * 30,
+          (TIMING.fall + count * 50) * slow,
+          (count - 1 - spawn.row) * 30 * slow,
           spawn.row === count - 1,
         ),
       );

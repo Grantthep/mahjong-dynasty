@@ -54,6 +54,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **Cascading wins** with the multiplier ladder ×1 → ×2 → ×3 → ×5 → ×8 (Free Spins: ×2 → ×4 → ×6 → ×10)
 - **Dragon Fortune** meter → golden dragon sweeps the board and turns 3–6 server-chosen tiles into Wilds
 - **Golden Dragon Wild** and **Lotus Scatter** (3 / 4 / 5+ Lotus = 8 / 12 / 15 Free Spins, retriggers supported)
+- **"One more Lotus…" suspense**: when two Lotus are showing, the board darkens, the two Lotus glow red and shake with a heartbeat, a banner says what is at stake, and the tiles that could bring the last one fall in slow motion (purely cosmetic; the server already decided the result)
 - **Wild Reel Respin** – when a Golden Wild lands on the first board it can lock its whole reel as Wilds while the other reels respin once (chance set in `gameConfig.ts`, decided by the server)
 - **Leaderboard** of the biggest single-spin demo wins (all time / last 24 hours, usernames only)
 - **Free Spins** stored server-side – refreshing the browser never loses them; the palace transforms into a warm red/gold atmosphere
@@ -65,7 +66,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **Turbo** (faster animations; pressing the Space bar while a spin plays fast-forwards it), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
 - **Paytable** in the game (gear-menu or table button) and on the About page, showing the credits paid per way at the bet you pick
 - **English / Chinese (中文)** language switch on every page; the choice is remembered (translations live in `apps/web/src/i18n/translations.ts`)
-- Audio: 12 original generated placeholder sounds (effects + two music loops), separate Music / Effects volume; the game is fully playable if any file is missing
+- Audio: 13 original generated placeholder sounds (effects + two music loops), separate Music / Effects volume; the game is fully playable if any file is missing
 - Responsive: 1920×1080, 1366×768, tablet, mobile portrait and landscape
 - RTP / hit-frequency **simulator** (`npm run simulate`)
 - 150+ automated tests (engine unit tests, API integration tests against PostgreSQL, React tests)
@@ -433,7 +434,7 @@ All artwork lives in `apps/web/public/assets/` and is documented in
 | `backgrounds/` | `palace-normal.svg`, `palace-free.svg`                                                                                                                       |
 | `ui/`          | `logo.svg`, `dragon-icon.svg`, `spin-ornament.svg`                                                                                                           |
 | `effects/`     | `dragon.svg`, `glow.svg`, `particle.svg`                                                                                                                     |
-| `audio/`       | 12 generated placeholder sounds (`.wav`); replace with your own `.mp3` / `.ogg` / `.wav`                                                                     |
+| `audio/`       | 13 generated placeholder sounds (`.wav`); replace with your own `.mp3` / `.ogg` / `.wav`                                                                     |
 
 ## Replacing artwork
 
@@ -446,7 +447,7 @@ All artwork lives in `apps/web/public/assets/` and is documented in
 ## Replacing audio
 
 Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-drop`, `cascade`, `win`,
-`big-win`, `wild`, `scatter`, `dragon-fortune`, `free-spins` (`.mp3`, `.ogg` or `.wav`) to
+`big-win`, `wild`, `scatter`, `dragon-fortune`, `free-spins`, `anticipation` (`.mp3`, `.ogg` or `.wav`) to
 `apps/web/public/assets/audio/`. Missing files are silently skipped. The repository includes generated
 placeholders (`npm run audio:generate`, which overwrites them); browsers only allow sound after a click or
 key press, and the game starts the music on the first one.

@@ -69,6 +69,7 @@ export const en = {
   'win.continue': 'Click to continue',
   'wild.reelBanner': 'WILD REEL RESPIN',
   'canvas.freeSpins': 'FREE SPINS',
+  'canvas.oneMore': 'ONE MORE LOTUS…',
   'canvas.awarded': '{count} AWARDED',
   'canvas.retrigger': '+{count} AWARDED',
 
@@ -237,6 +238,7 @@ export const zh: Translations = {
   'win.continue': '点击继续',
   'wild.reelBanner': '百搭卷轴重转',
   'canvas.freeSpins': '免费旋转',
+  'canvas.oneMore': '再来一朵莲花…',
   'canvas.awarded': '获得 {count} 次',
   'canvas.retrigger': '再获得 {count} 次',
 

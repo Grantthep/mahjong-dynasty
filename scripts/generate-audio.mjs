@@ -4,9 +4,9 @@
  *   npm run audio:generate
  *
  * Every sound is synthesised from sine waves and filtered noise and written as a small 16-bit mono
- * WAV to apps/web/public/assets/audio/<name>.wav. The 12 names are the ones the game looks for:
+ * WAV to apps/web/public/assets/audio/<name>.wav. The 13 names are the ones the game looks for:
  * bgm-main, bgm-free-spins, button, spin, tile-drop, cascade, win, big-win, wild, scatter,
- * dragon-fortune, free-spins.
+ * dragon-fortune, free-spins, anticipation.
  *
  * Replace any file with your own (.mp3 / .ogg / .wav, same name) - see
  * apps/web/public/assets/README.md. Running this script again overwrites them.
@@ -391,6 +391,56 @@ function freeSpins() {
   save('free-spins', b, { peak: 0.6, fadeOut: 0.12 });
 }
 
+/** Two Lotus are showing: a heartbeat that quickens while a tense tone rises. */
+function anticipation() {
+  const b = buffer(1.9);
+  // "lub-dub" beats, each a little stronger than the one before.
+  [0.05, 0.6, 1.1].forEach((t, i) => {
+    const gain = 0.9 + i * 0.12;
+    addNote(b, {
+      start: t,
+      freq: 66,
+      glideTo: 44,
+      length: 0.22,
+      gain,
+      partials: [1, 0.35],
+      decay: 0.16,
+    });
+    addNote(b, {
+      start: t + 0.17,
+      freq: 78,
+      glideTo: 50,
+      length: 0.2,
+      gain: gain * 0.7,
+      partials: [1, 0.3],
+      decay: 0.13,
+    });
+  });
+  // The rising tone and a hiss that brightens: something is about to happen.
+  addNote(b, {
+    start: 0,
+    freq: 220,
+    glideTo: 700,
+    length: 1.85,
+    gain: 0.16,
+    partials: [1, 0.4, 0.15],
+    decay: 3,
+    attack: 0.9,
+    vibrato: 0.02,
+  });
+  addNoise(b, {
+    start: 0,
+    length: 1.85,
+    gain: 0.09,
+    cutoffFrom: 700,
+    cutoffTo: 5500,
+    attack: 1.2,
+    decay: 4,
+    seed: 51,
+  });
+  save('anticipation', b, { peak: 0.6, fadeOut: 0.06 });
+}
+
 /* ---------------------------------------------------------------- music */
 
 /**
@@ -454,33 +504,43 @@ function music({ name, seconds, bpm, seed, melodyGain, droneRoot, rootShift = 0,
 
 mkdirSync(OUT, { recursive: true });
 console.info(`Writing original placeholder audio to ${OUT}`);
-button();
-spin();
-tileDrop();
-cascade();
-win();
-bigWin();
-wild();
-scatter();
-dragonFortune();
-freeSpins();
-music({
-  name: 'bgm-main',
-  seconds: 24,
-  bpm: 80,
-  seed: 7,
-  melodyGain: 0.3,
-  droneRoot: 38,
-  peak: 0.5,
-});
-music({
-  name: 'bgm-free-spins',
-  seconds: 20,
-  bpm: 112,
-  seed: 19,
-  melodyGain: 0.32,
-  droneRoot: 43,
-  rootShift: 1,
-  peak: 0.5,
-});
+// Optional names on the command line: `node scripts/generate-audio.mjs anticipation` writes only that file
+// (handy so the sounds you replaced by hand are left alone).
+const only = process.argv.slice(2);
+const wanted = (name) => only.length === 0 || only.includes(name);
+const effects = {
+  button,
+  spin,
+  'tile-drop': tileDrop,
+  cascade,
+  win,
+  'big-win': bigWin,
+  wild,
+  scatter,
+  'dragon-fortune': dragonFortune,
+  'free-spins': freeSpins,
+  anticipation,
+};
+for (const [name, make] of Object.entries(effects)) if (wanted(name)) make();
+if (wanted('bgm-main'))
+  music({
+    name: 'bgm-main',
+    seconds: 24,
+    bpm: 80,
+    seed: 7,
+    melodyGain: 0.3,
+    droneRoot: 38,
+    peak: 0.5,
+  });
+if (wanted('bgm-free-spins'))
+  music({
+    name: 'bgm-free-spins',
+    seconds: 20,
+    bpm: 112,
+    seed: 19,
+    melodyGain: 0.32,
+    droneRoot: 43,
+    rootShift: 1,
+    peak: 0.5,
+  });
 console.info('Done. Replace any file with your own (same name) to change it.');

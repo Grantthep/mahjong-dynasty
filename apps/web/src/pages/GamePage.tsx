@@ -77,6 +77,8 @@ export default function GamePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [paytableOpen, setPaytableOpen] = useState(false);
   const [overlay, setOverlay] = useState<OverlayInfo | null>(null);
+  /** True while the game is hunting for the last Lotus (two are showing). */
+  const [hunting, setHunting] = useState(false);
 
   const bootRef = useRef({ config: config.data, state: gameState.data });
   bootRef.current = { config: config.data, state: gameState.data };
@@ -240,7 +242,9 @@ export default function GamePage() {
       await controller.playSpin(result, {
         onWin: (total) => useGameStore.getState().setWin(total),
         onDim: setDim,
+        onHunt: setHunting,
         labels: {
+          oneMore: tr('canvas.oneMore'),
           wildReel: tr('wild.reelBanner'),
           freeSpins: tr('canvas.freeSpins'),
           awarded: (spins, retrigger) =>
@@ -305,7 +309,10 @@ export default function GamePage() {
       useGameStore.getState().setAuto(false);
       await handleError(cause);
     } finally {
-      if (mountedRef.current) useGameStore.getState().setPhase('idle');
+      if (mountedRef.current) {
+        useGameStore.getState().setPhase('idle');
+        setHunting(false); // never leave the suspense switched on after a failed spin
+      }
     }
   }, [handleError, present]);
   spinRef.current = spin;
@@ -372,7 +379,7 @@ export default function GamePage() {
   const spinning = phase === 'spinning';
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-hunting={hunting}>
       <PalaceBackground mode={mode === 'free' ? 'free' : 'normal'} dim={dim} />
 
       <header className={styles.top}>
@@ -425,6 +432,11 @@ export default function GamePage() {
           </div>
         ) : null}
       </main>
+
+      {/* Screen readers: announce the suspense that the canvas shows visually. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {hunting ? t('canvas.oneMore') : ''}
+      </p>
 
       {error ? (
         <div className={styles.toast} role="alert">
