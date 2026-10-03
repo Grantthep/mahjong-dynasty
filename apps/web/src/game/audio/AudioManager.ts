@@ -43,6 +43,18 @@ export class AudioManager {
   constructor(private readonly baseUrl = '/assets/audio') {}
 
   /**
+   * Starts fetching every sound file now, well before the player taps anything. Strict mobile
+   * browsers (iOS Safari especially) only allow `.play()` to succeed when it runs synchronously
+   * inside the gesture handler - any `await` on a network fetch in between loses that permission,
+   * so playing a sound for the very first time on a cold cache silently fails. Preloading means the
+   * fetch is already done by the time a gesture calls play(), so nothing has to be awaited then.
+   */
+  preload(): void {
+    if (this.muted || this.destroyed) return;
+    for (const name of SOUND_NAMES) void this.load(name);
+  }
+
+  /**
    * Browsers refuse to play sound until the player has interacted with the page. Call this from a
    * click / key handler: it (re)starts the background music if the first attempt was blocked.
    */
@@ -59,7 +71,10 @@ export class AudioManager {
   setMuted(muted: boolean): void {
     this.muted = muted;
     if (this.currentBgm) this.currentBgm.element.muted = muted;
-    if (!muted) void this.playBgm(this.wantedBgm);
+    if (!muted) {
+      this.preload();
+      void this.playBgm(this.wantedBgm);
+    }
   }
 
   setVolume(volume: number): void {

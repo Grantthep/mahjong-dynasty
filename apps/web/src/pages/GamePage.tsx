@@ -152,14 +152,16 @@ export default function GamePage() {
     controllerRef.current?.audio.setMix({ music: musicVolume, sfx: sfxVolume });
   }, [musicVolume, sfxVolume, engineReady]);
 
-  // The first click or key press lets the browser start the music (autoplay is blocked before it).
+  // The first interaction lets the browser start the music (autoplay is blocked before it).
+  // iOS Safari only counts a few event types as a real "user gesture" for unlocking audio - in
+  // particular it does NOT count `pointerdown`/`touchstart` (the finger landing), only the
+  // release (`touchend`) or a synthesized `click`. Listening on all of them covers every browser.
   useEffect(() => {
     const unlock = () => controllerRef.current?.audio.unlock();
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
+    const events = ['pointerdown', 'pointerup', 'touchend', 'mousedown', 'click', 'keydown'] as const;
+    for (const event of events) window.addEventListener(event, unlock);
     return () => {
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
+      for (const event of events) window.removeEventListener(event, unlock);
     };
   }, []);
 

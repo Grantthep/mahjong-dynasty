@@ -48,6 +48,7 @@ export class GameController {
     const audio = new AudioManager();
     audio.setMuted(init.muted);
     audio.setVolume(init.volume);
+    audio.preload();
 
     const idle = GameController.idleMultiplierFor(init.mode, init.config);
     const game = new Phaser.Game({

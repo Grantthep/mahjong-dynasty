@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AudioManager } from './AudioManager';
+import { AudioManager, SOUND_NAMES } from './AudioManager';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -155,5 +155,41 @@ describe('AudioManager', () => {
     audio.setMuted(true);
     await audio.play('wild');
     expect(created).not.toHaveBeenCalled();
+  });
+
+  it('preload() starts fetching every sound up front so a later gesture has nothing to await', () => {
+    const created = vi.fn();
+    vi.stubGlobal(
+      'Audio',
+      class extends MissingAudio {
+        constructor() {
+          super();
+          created();
+        }
+      },
+    );
+    const audio = new AudioManager();
+    audio.preload();
+    expect(created).toHaveBeenCalledTimes(SOUND_NAMES.length);
+  });
+
+  it('preload() is a no-op while muted, and runs when unmuted afterwards', () => {
+    const created = vi.fn();
+    vi.stubGlobal(
+      'Audio',
+      class extends MissingAudio {
+        constructor() {
+          super();
+          created();
+        }
+      },
+    );
+    const audio = new AudioManager();
+    audio.setMuted(true);
+    audio.preload();
+    expect(created).not.toHaveBeenCalled();
+
+    audio.setMuted(false);
+    expect(created).toHaveBeenCalledTimes(SOUND_NAMES.length);
   });
 });

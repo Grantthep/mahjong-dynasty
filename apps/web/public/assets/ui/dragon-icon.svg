@@ -2,12 +2,20 @@
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2D27C"/><stop offset="1" stop-color="#9A7420"/></linearGradient>
   </defs>
-  <g transform="translate(30 34)">
-    <path d="M-26 -12 C-20 -28 -6 -32 6 -27 C0 -22 -5 -20 -6 -14 Z" fill="url(#g)"/>
-    <path d="M-2 -18 C0 -32 10 -38 20 -34 C14 -30 10 -24 10 -16 Z" fill="url(#g)"/>
-    <path d="M-28 -2 C-26 -18 -8 -22 10 -16 L30 -12 C38 -10 38 2 30 5 L14 9 C2 20 -20 18 -28 -2 Z" fill="url(#g)" stroke="#7A5A16" stroke-width="1"/>
-    <path d="M6 7 C18 15 28 11 32 4 L30 12 C24 22 8 24 2 14 Z" fill="#B98A2E"/>
-    <path d="M-26 6 C-36 12 -38 24 -32 32 C-32 22 -22 16 -12 12 Z" fill="#258A70"/>
-    <circle cx="9" cy="-6" r="4" fill="#FFF3B5"/><circle cx="10" cy="-6" r="1.8" fill="#5A1010"/>
+  <!-- coiling body and tail -->
+  <path d="M15 53 C4 42 5 22 19 13 C27 7 36 7 41 12" fill="none" stroke="url(#g)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M15 53 C4 42 5 22 19 13 C27 7 36 7 41 12" fill="none" stroke="#7A5A16" stroke-width="7.4" stroke-dasharray="1.6 4.6" opacity="0.65"/>
+  <path d="M9 56 l-7 5 9 1z" fill="url(#g)"/>
+
+  <!-- head: back mane, horns, snout, open jaw with fangs, eye -->
+  <g transform="translate(34 14) scale(0.17)">
+    <path d="M-4 -30 C-30 -54 -70 -46 -110 -70 C-80 -26 -50 -14 -4 8 Z" fill="#146B57" stroke="#F2D27C" stroke-width="2"/>
+    <path d="M8 -26 C-6 -64 -34 -92 -66 -100 C-38 -78 -22 -52 -4 -22 Z" fill="url(#g)" stroke="#7A5A16" stroke-width="1.4"/>
+    <path d="M24 -30 C20 -70 4 -92 -14 -104 C4 -82 8 -58 12 -28 Z" fill="url(#g)" stroke="#7A5A16" stroke-width="1.4"/>
+    <path d="M-6 -26 C20 -46 64 -46 96 -30 L146 -22 C160 -18 160 4 146 8 L100 14 C74 40 24 38 -6 22 Z" fill="url(#g)" stroke="#7A5A16" stroke-width="2"/>
+    <path d="M64 20 C92 40 128 34 144 12 L140 26 C120 48 82 50 58 32 Z" fill="#B98A2E"/>
+    <path d="M100 14 l5 11 5 -11 M118 12 l4 9 4 -9" fill="#FFF7E0" stroke="none"/>
+    <circle cx="70" cy="-14" r="9" fill="#FFF3B5"/><circle cx="72" cy="-14" r="4" fill="#B01818"/>
+    <circle cx="140" cy="-10" r="3" fill="#5A3A08"/>
   </g>
 </svg>
