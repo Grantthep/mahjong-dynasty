@@ -16,6 +16,13 @@ interface Props {
   onMusicVolumeChange: (volume: number) => void;
   onSfxVolumeChange: (volume: number) => void;
   onOpenPaytable?: () => void;
+  /** Auto spin stop limits (all optional; omit a handler to hide that control). */
+  autoStopOnWin?: boolean;
+  autoStopWinOver?: number | null;
+  autoStopLossOver?: number | null;
+  onAutoStopOnWinChange?: (on: boolean) => void;
+  onAutoStopWinOverChange?: (limit: number | null) => void;
+  onAutoStopLossOverChange?: (limit: number | null) => void;
 }
 
 export function SettingsPanel({
@@ -31,6 +38,12 @@ export function SettingsPanel({
   onMusicVolumeChange,
   onSfxVolumeChange,
   onOpenPaytable,
+  autoStopOnWin = false,
+  autoStopWinOver = null,
+  autoStopLossOver = null,
+  onAutoStopOnWinChange,
+  onAutoStopWinOverChange,
+  onAutoStopLossOverChange,
 }: Props) {
   const t = useT();
   if (!open) return null;
@@ -53,6 +66,35 @@ export function SettingsPanel({
         aria-label={ariaLabel}
       />
     </label>
+  );
+
+  /** A positive-credits field; empty means "no limit". */
+  const limitField = (
+    label: string,
+    value: number | null,
+    onChange: (next: number | null) => void,
+  ) => (
+    <label className={styles.row}>
+      <span>{label}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={1}
+        step={1}
+        className={styles.limitInput}
+        placeholder={t('settings.noLimit')}
+        value={value ?? ''}
+        onChange={(event) => {
+          const raw = event.target.value;
+          onChange(raw === '' ? null : Number(raw));
+        }}
+        aria-label={label}
+      />
+    </label>
+  );
+
+  const showAutoStop = Boolean(
+    onAutoStopOnWinChange && onAutoStopWinOverChange && onAutoStopLossOverChange,
   );
 
   return (
@@ -96,6 +138,27 @@ export function SettingsPanel({
           <span>{t('lang.label')}</span>
           <LanguageSwitch />
         </div>
+
+        {showAutoStop ? (
+          <>
+            <h3 className={styles.sectionTitle}>{t('settings.autoStopTitle')}</h3>
+            <label className={styles.row}>
+              <span>{t('settings.autoStopOnWin')}</span>
+              <input
+                type="checkbox"
+                checked={autoStopOnWin}
+                onChange={(event) => onAutoStopOnWinChange?.(event.target.checked)}
+                aria-label={t('settings.autoStopOnWin')}
+              />
+            </label>
+            {limitField(t('settings.autoStopWinOver'), autoStopWinOver, (next) =>
+              onAutoStopWinOverChange?.(next),
+            )}
+            {limitField(t('settings.autoStopLossOver'), autoStopLossOver, (next) =>
+              onAutoStopLossOverChange?.(next),
+            )}
+          </>
+        ) : null}
 
         <nav className={styles.links}>
           {onOpenPaytable ? (

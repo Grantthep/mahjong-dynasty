@@ -60,6 +60,9 @@ export default function GamePage() {
     auto,
     autoLeft,
     autoLimit,
+    autoStopOnWin,
+    autoStopWinOver,
+    autoStopLossOver,
     turbo,
   } = useGameStore();
 
@@ -293,6 +296,22 @@ export default function GamePage() {
           if (left <= 0) latest.setAuto(false);
         }
 
+        // Stop-limit checks (paid spins only; a Free Spins round always plays to the end).
+        if (latest.auto && !result.isFreeSpin) {
+          const lossSoFar =
+            latest.autoStartBalance !== null ? latest.autoStartBalance - result.balanceAfter : 0;
+          if (latest.autoStopOnWin && result.totalWin > 0) {
+            latest.setAuto(false);
+            latest.setError(tr('hud.autoStoppedWin'));
+          } else if (latest.autoStopWinOver !== null && result.totalWin >= latest.autoStopWinOver) {
+            latest.setAuto(false);
+            latest.setError(tr('hud.autoStoppedWinOver'));
+          } else if (latest.autoStopLossOver !== null && lossSoFar >= latest.autoStopLossOver) {
+            latest.setAuto(false);
+            latest.setError(tr('hud.autoStoppedLossOver'));
+          }
+        }
+
         // Free Spins already play one after another; auto spin also continues normal spins.
         const wantsNext = useGameStore.getState().auto || freeSpinsLeft;
         if (wantsNext && !freeSpinsLeft && result.balanceAfter < latest.bet) {
@@ -333,6 +352,7 @@ export default function GamePage() {
       return;
     }
     store.setAutoLeft(store.autoLimit);
+    store.setAutoStartBalance(store.balance);
     store.setAuto(true);
     void spinRef.current(); // no-op if a spin is already in progress; that spin will chain the next
   };
@@ -493,6 +513,12 @@ export default function GamePage() {
         onVolumeChange={(next) => useGameStore.getState().setVolume(next)}
         onMusicVolumeChange={(next) => useGameStore.getState().setMusicVolume(next)}
         onSfxVolumeChange={(next) => useGameStore.getState().setSfxVolume(next)}
+        autoStopOnWin={autoStopOnWin}
+        autoStopWinOver={autoStopWinOver}
+        autoStopLossOver={autoStopLossOver}
+        onAutoStopOnWinChange={(on) => useGameStore.getState().setAutoStopOnWin(on)}
+        onAutoStopWinOverChange={(limit) => useGameStore.getState().setAutoStopWinOver(limit)}
+        onAutoStopLossOverChange={(limit) => useGameStore.getState().setAutoStopLossOver(limit)}
       />
 
       {overlay ? (

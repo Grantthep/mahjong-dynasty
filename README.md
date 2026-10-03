@@ -29,7 +29,7 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 7. [Installation (Windows)](#installation-windows)
 8. [Docker / PostgreSQL](#docker--postgresql) · [Environment](#environment) · [Database migration](#database-migration)
 9. [Running the project](#running-the-project) · [Testing](#testing) · [Simulation](#simulation) · [Building](#building)
-10. [Git workflow](#git-workflow) · [Asset guide](#asset-guide) · [Replacing artwork](#replacing-artwork) · [Replacing audio](#replacing-audio)
+10. [Git workflow](#git-workflow) · [Asset guide](#asset-guide) · [Replacing artwork](#replacing-artwork) · [Replacing audio](#replacing-audio) · [Icons, PWA & link previews](#icons-pwa--link-previews)
 11. [Known limitations](#known-limitations) · [Future improvements](#future-improvements)
 
 ---
@@ -62,8 +62,10 @@ that decides every outcome while the browser (React + Phaser 3) simply brings it
 - **No sign-up and no log-in**: the site opens straight into the game and the server gives each browser an anonymous **guest player** (like `Guest4821`, 10,000 demo credits) remembered in an **HttpOnly** cookie. Balance, Free Spins and history stay on the server
 - Profile with lifetime stats and recent spins; spin history endpoint
 - Idempotent, transaction-safe spins (double clicks and concurrent requests cannot double-charge)
-- **Auto spin**: one button starts and stops it (choose 10 / 25 / 50 / 100 / until stopped); it also stops by itself on an error or when the balance can't cover the bet
-- **Turbo** (faster animations; pressing the Space bar while a spin plays fast-forwards it), auto spin counts of 10 / 25 / 50 / 100 / until stopped, and separate **Music** and **Effects** volume sliders
+- **Auto spin**: one button starts and stops it (choose 10 / 25 / 50 / 100 / until stopped); it also stops by itself on an error, when the balance can't cover the bet, or on the stop limits below
+- **Autoplay stop limits** (Settings): stop on any win, stop once a single win reaches a chosen amount, stop once the loss since autoplay started reaches a chosen amount — common on real slot sites, all optional and remembered per browser
+- **Turbo** (faster animations; pressing the Space bar while a spin plays fast-forwards it), and separate **Music** and **Effects** volume sliders
+- **Installable as an app** (PWA manifest + generated icons: `npm run icons:generate`) and crash-proof: a React error boundary shows a Reload button instead of a blank page if something unexpected breaks
 - **Paytable** in the game (gear-menu or table button) and on the About page, showing the credits paid per way at the bet you pick
 - **English / Chinese (中文)** language switch on every page; the choice is remembered (translations live in `apps/web/src/i18n/translations.ts`)
 - Audio: 13 original generated placeholder sounds (effects + two music loops), separate Music / Effects volume; the game is fully playable if any file is missing
@@ -109,6 +111,7 @@ mahjong-dynasty/
 ├── apps/
 │   ├── web/                       React + Phaser client
 │   │   ├── public/assets/         symbols/ backgrounds/ ui/ effects/ audio/  (+ README.md)
+│   │   ├── public/                manifest.webmanifest, favicon-*.png, og-image.png, robots.txt
 │   │   └── src/
 │   │       ├── api/               fetch client + typed endpoints
 │   │       ├── components/        HUD, BetControls, SpinButton, PalaceBackground, Logo, overlays …
@@ -130,7 +133,7 @@ mahjong-dynasty/
 │       │   ├── app.ts  server.ts  simulate.ts
 │       └── tests/                 game/ (unit) · integration/ (supertest + PostgreSQL)
 ├── packages/shared/src/           types/ schemas/ constants/
-├── scripts/                       generate-assets.mjs, embedded-postgres.mjs
+├── scripts/                       generate-assets.mjs, generate-audio.mjs, generate-icons.mjs, embedded-postgres.mjs
 ├── docs/screenshots/
 ├── docker-compose.yml  .env.example  eslint.config.js  .github/workflows/ci.yml  package.json
 ```
@@ -481,7 +484,7 @@ All artwork lives in `apps/web/public/assets/` and is documented in
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `symbols/`     | `circle` `bamboo` `character` `five-character` `eight-character` `east-wind` `white-dragon` `green-dragon` `red-dragon` `wild-dragon` `lotus-scatter` (.svg) |
 | `backgrounds/` | `palace-normal.svg`, `palace-free.svg`                                                                                                                       |
-| `ui/`          | `logo.svg`, `dragon-icon.svg`, `spin-ornament.svg`                                                                                                           |
+| `ui/`          | `logo.svg`, `dragon-icon.svg`, `spin-ornament.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-512-maskable.png`                          |
 | `effects/`     | `dragon.svg`, `glow.svg`, `particle.svg`                                                                                                                     |
 | `audio/`       | 13 generated placeholder sounds (`.wav`); replace with your own `.mp3` / `.ogg` / `.wav`                                                                     |
 
@@ -501,6 +504,24 @@ Add files named exactly `bgm-main`, `bgm-free-spins`, `button`, `spin`, `tile-dr
 placeholders (`npm run audio:generate`, which overwrites them); browsers only allow sound after a click or
 key press, and the game starts the music on the first one.
 
+## Icons, PWA & link previews
+
+```bat
+npm run icons:generate
+```
+
+Renders `apps/web/public/assets/ui/dragon-icon.svg` into every size a real deployment needs —
+favicons, the `apple-touch-icon`, the PWA manifest icons (`any` + a padded `maskable` variant for
+Android's adaptive-icon safe zone) and a 1200×630 `og-image.png` for link previews in chat apps and
+social media — using the Chromium that Playwright already installs for the end-to-end tests, so it
+needs no new dependency. Re-run it after changing `dragon-icon.svg`.
+
+`apps/web/public/manifest.webmanifest` makes the game installable ("Add to Home Screen" / the
+browser's install icon) on phones and desktops; no code change is needed beyond keeping the icons in
+sync. `index.html` also carries Open Graph / Twitter Card tags so a shared link shows a preview card
+instead of a bare URL — set an absolute URL there once a real domain is chosen, since the generated
+tags use relative paths (`/og-image.png`), which some crawlers do not resolve.
+
 ## Known limitations
 
 - **Demo maths only** – tuned by simulation, not certified; return varies slightly with bet size
@@ -512,6 +533,12 @@ key press, and the game starts the music on the first one.
 - There are no accounts: a guest's balance lives with a browser cookie, so clearing site data (or switching browser or device) starts a new guest.
 - The Phaser bundle is large (≈330 kB gzip); it is code-split so only game players download it.
 - `docker-compose.yml` is for a local PostgreSQL only; `docker-compose.prod.yml` runs the whole stack.
+- A crash in the React UI is caught (`ErrorBoundary`, shows a Reload button instead of a blank
+  page) but is only logged to the browser console. Wire up a real error-reporting service (Sentry
+  or similar) before a public launch if you want to find out about crashes yourself.
+- No persistent hosting is set up by this repo — `npm run share` gives a temporary public link (see
+  above) and `docker-compose.prod.yml` is ready to deploy, but picking and configuring a permanent
+  host (Render, Railway, a VPS, …) is a deliberate step left to you.
 
 ## Future improvements
 

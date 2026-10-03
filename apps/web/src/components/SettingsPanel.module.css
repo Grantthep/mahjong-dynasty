@@ -52,20 +52,31 @@
   height: 20px;
   accent-color: var(--gold);
 }
+.limitInput {
+  width: 90px;
+  background: rgba(6, 21, 18, 0.65);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 0.3rem 0.5rem;
+  text-align: right;
+  font: inherit;
+}
+.limitInput::placeholder {
+  color: var(--text-muted);
+}
+.sectionTitle {
+  margin: 0.9rem 0 0.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 .links {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   margin: 1rem 0;
-}
-.logout {
-  align-self: flex-start;
-  background: none;
-  border: 1px solid rgba(208, 74, 58, 0.6);
-  color: #ffb3a8;
-  border-radius: 999px;
-  padding: 0.4rem 1rem;
-  cursor: pointer;
 }
 .note {
   margin: 0;

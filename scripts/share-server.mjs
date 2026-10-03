@@ -17,6 +17,7 @@ const TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.txt': 'text/plain; charset=utf-8',
   '.map': 'application/json; charset=utf-8',
   '.woff': 'font/woff',
@@ -28,7 +29,17 @@ const TYPES = {
   '.mp3': 'audio/mpeg',
   '.ogg': 'audio/ogg',
 };
-const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.svg', '.json', '.txt', '.map', '.wav']);
+const COMPRESSIBLE = new Set([
+  '.html',
+  '.js',
+  '.css',
+  '.svg',
+  '.json',
+  '.webmanifest',
+  '.txt',
+  '.map',
+  '.wav',
+]);
 
 /** Vite gives build output a content hash (GamePage-B8gWXy8e.js): safe to cache for a year. */
 const HASHED = /^\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.(js|css|woff2?)$/;

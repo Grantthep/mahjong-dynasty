@@ -18,6 +18,12 @@ interface PlaySettings {
   turbo: boolean;
   /** How many auto spins to play (`null` = until stopped). */
   autoLimit: number | null;
+  /** Stop auto spin as soon as any spin wins something. */
+  autoStopOnWin: boolean;
+  /** Stop auto spin when one spin wins at least this many demo credits (`null` = no limit). */
+  autoStopWinOver: number | null;
+  /** Stop auto spin once the loss since it started reaches this many demo credits (`null` = no limit). */
+  autoStopLossOver: number | null;
 }
 
 const SOUND_KEY = 'mjd.sound';
@@ -25,6 +31,10 @@ const PLAY_KEY = 'mjd.play';
 
 const clamp01 = (value: unknown, fallback: number): number =>
   typeof value === 'number' ? Math.min(1, Math.max(0, value)) : fallback;
+
+/** A positive whole number of demo credits, or `null` ("no limit"). Anything else falls back to `null`. */
+const creditLimit = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.round(value) : null;
 
 function loadSound(): SoundSettings {
   try {
@@ -61,12 +71,21 @@ function loadPlay(): PlaySettings {
       return {
         turbo: Boolean(parsed.turbo),
         autoLimit: AUTO_SPIN_OPTIONS.includes(limit) ? limit : null,
+        autoStopOnWin: Boolean(parsed.autoStopOnWin),
+        autoStopWinOver: creditLimit(parsed.autoStopWinOver),
+        autoStopLossOver: creditLimit(parsed.autoStopLossOver),
       };
     }
   } catch {
     // storage unavailable - use defaults
   }
-  return { turbo: false, autoLimit: null };
+  return {
+    turbo: false,
+    autoLimit: null,
+    autoStopOnWin: false,
+    autoStopWinOver: null,
+    autoStopLossOver: null,
+  };
 }
 
 function savePlay(settings: PlaySettings) {
@@ -91,6 +110,8 @@ interface GameUiState extends SoundSettings, PlaySettings {
   auto: boolean;
   /** Auto spins still to play in this run (`null` = unlimited). */
   autoLeft: number | null;
+  /** Balance when the current auto spin run started; used to measure the loss-limit. */
+  autoStartBalance: number | null;
 
   hydrate: (args: { balance: number; session: SessionSnapshot; defaultBet: number }) => void;
   setPhase: (phase: GamePhase) => void;
@@ -102,7 +123,11 @@ interface GameUiState extends SoundSettings, PlaySettings {
   setError: (error: string | null) => void;
   setAuto: (auto: boolean) => void;
   setAutoLeft: (left: number | null) => void;
+  setAutoStartBalance: (balance: number | null) => void;
   setAutoLimit: (limit: number | null) => void;
+  setAutoStopOnWin: (on: boolean) => void;
+  setAutoStopWinOver: (limit: number | null) => void;
+  setAutoStopLossOver: (limit: number | null) => void;
   setTurbo: (turbo: boolean) => void;
   setMuted: (muted: boolean) => void;
   setVolume: (volume: number) => void;
@@ -125,8 +150,8 @@ export const useGameStore = create<GameUiState>((set, get) => {
     return { muted, volume, musicVolume, sfxVolume };
   };
   const play = (): PlaySettings => {
-    const { turbo, autoLimit } = get();
-    return { turbo, autoLimit };
+    const { turbo, autoLimit, autoStopOnWin, autoStopWinOver, autoStopLossOver } = get();
+    return { turbo, autoLimit, autoStopOnWin, autoStopWinOver, autoStopLossOver };
   };
 
   return {
@@ -141,6 +166,7 @@ export const useGameStore = create<GameUiState>((set, get) => {
     error: null,
     auto: false,
     autoLeft: null,
+    autoStartBalance: null,
 
     hydrate: ({ balance, session, defaultBet }) =>
       set({
@@ -161,8 +187,21 @@ export const useGameStore = create<GameUiState>((set, get) => {
     setError: (error) => set({ error }),
     setAuto: (auto) => set({ auto }),
     setAutoLeft: (autoLeft) => set({ autoLeft }),
+    setAutoStartBalance: (autoStartBalance) => set({ autoStartBalance }),
     setAutoLimit: (autoLimit) => {
       set({ autoLimit });
+      savePlay(play());
+    },
+    setAutoStopOnWin: (autoStopOnWin) => {
+      set({ autoStopOnWin });
+      savePlay(play());
+    },
+    setAutoStopWinOver: (autoStopWinOver) => {
+      set({ autoStopWinOver: creditLimit(autoStopWinOver) });
+      savePlay(play());
+    },
+    setAutoStopLossOver: (autoStopLossOver) => {
+      set({ autoStopLossOver: creditLimit(autoStopLossOver) });
       savePlay(play());
     },
     setTurbo: (turbo) => {

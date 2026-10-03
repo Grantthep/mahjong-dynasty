@@ -317,3 +317,114 @@ test.describe('suspense when two Lotus are showing', () => {
     });
   });
 });
+
+test.describe('autoplay stop limits', () => {
+  /** Forces every spin's result to a fixed win amount, whatever the server rolled. */
+  async function forceWin(page: Page, win: number) {
+    await page.route('**/api/game/spin', async (route) => {
+      const response = await route.fetch();
+      const real = await response.json();
+      await route.fulfill({
+        response,
+        json: {
+          ...real,
+          cascades: [],
+          wildReelRespin: null,
+          totalWin: win,
+          bigWinTier: 'none',
+          scatterCount: 0,
+          scatterPositions: [],
+          freeSpinsAwarded: 0,
+          freeSpinsRetriggered: false,
+          freeSpinsCompleted: false,
+          freeSpinsWinTotal: 0,
+          dragonFortuneTriggers: 0,
+          dragonMeterAfter: real.dragonMeterBefore,
+          finalBoard: real.initialBoard,
+          balanceAfter: real.balanceBefore - real.bet + win,
+          session: {
+            dragonMeter: real.dragonMeterBefore,
+            freeSpinsRemaining: 0,
+            freeSpinsTotal: 0,
+            freeSpinBet: 0,
+            freeSpinsWin: 0,
+          },
+        },
+      });
+    });
+  }
+
+  const spinCount = async (page: Page) =>
+    (await (await page.request.get('/api/game/history?limit=50')).json()).spins.length as number;
+
+  test('"stop on any win" stops auto spin right after the first win', async ({ page }) => {
+    await forceWin(page, 40); // every forced spin wins something
+    await openGame(page);
+    await page.getByRole('button', { name: 'TURBO' }).click();
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('checkbox', { name: 'Stop on any win' }).check();
+    await page.getByRole('button', { name: 'Close settings' }).click();
+
+    await page.getByRole('combobox', { name: 'Number of auto spins' }).selectOption('25');
+    await page.getByRole('button', { name: 'AUTO SPIN' }).click();
+
+    await expect(page.getByRole('alert')).toContainText('that spin won', { timeout: 20_000 });
+    await expect(page.getByRole('button', { name: 'AUTO SPIN' })).toBeVisible();
+    await waitForSpinToFinish(page);
+    expect(await spinCount(page)).toBe(1); // stopped after exactly one spin, not two or more
+  });
+
+  test('"stop if a single win reaches" lets small wins through but stops on a big one', async ({
+    page,
+  }) => {
+    await forceWin(page, 40);
+    await openGame(page);
+    await page.getByRole('button', { name: 'TURBO' }).click();
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('spinbutton', { name: 'Stop if a single win reaches' }).fill('100');
+    await page.getByRole('button', { name: 'Close settings' }).click();
+
+    await page.getByRole('combobox', { name: 'Number of auto spins' }).selectOption('25');
+    await page.getByRole('button', { name: 'AUTO SPIN' }).click();
+
+    // 40 < 100: the limit alone would never stop it, so let it run a couple of spins...
+    await expect.poll(() => spinCount(page), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
+    await page.getByRole('button', { name: 'STOP AUTO' }).click();
+    await waitForSpinToFinish(page);
+
+    // ...now set the limit low enough that the next forced win (40) crosses it.
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('spinbutton', { name: 'Stop if a single win reaches' }).fill('30');
+    await page.getByRole('button', { name: 'Close settings' }).click();
+    const before = await spinCount(page);
+
+    await page.getByRole('button', { name: 'AUTO SPIN' }).click();
+    await expect(page.getByRole('alert')).toContainText('single-win limit', { timeout: 20_000 });
+    await waitForSpinToFinish(page);
+    expect(await spinCount(page)).toBe(before + 1); // stopped after exactly one more spin
+  });
+
+  test('"stop if the loss reaches" stops once accumulated losses cross the limit', async ({
+    page,
+  }) => {
+    await forceWin(page, 0); // every forced spin loses the full bet (default bet is 20)
+    await openGame(page);
+    await page.getByRole('button', { name: 'TURBO' }).click();
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('spinbutton', { name: 'Stop if the loss reaches' }).fill('35');
+    await page.getByRole('button', { name: 'Close settings' }).click();
+
+    const before = await spinCount(page);
+    await page.getByRole('combobox', { name: 'Number of auto spins' }).selectOption('inf');
+    await page.getByRole('button', { name: 'AUTO SPIN' }).click();
+
+    // 20 lost after spin 1 (< 35, keeps going), 40 lost after spin 2 (>= 35, stops).
+    await expect(page.getByRole('alert')).toContainText('loss limit', { timeout: 20_000 });
+    await expect(page.getByRole('button', { name: 'AUTO SPIN' })).toBeVisible();
+    await waitForSpinToFinish(page);
+    expect(await spinCount(page)).toBe(before + 2);
+  });
+});
